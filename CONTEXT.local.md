@@ -31,6 +31,14 @@ Backend comunitario **GTK3** para .NET MAUI, mantenido por la organización Maui
 
 **Entorno:** se requiere Linux o WSL2 con Ubuntu 24.04, .NET SDK 8.0.2xx y GTK3 (`libgtk-3-dev`/runtime). En Windows nativo no hay soporte directo para el TFM `-gtk`.
 
+## Entorno de este PC (validado 2026-10-26)
+
+- **Host:** Windows 11 Pro 26300, i7-1165G7 (4C/8T), 16 GB RAM, ~539 GB libres en `D:`.
+- **Windows nativo: NO sirve.** `dotnet build` del sample falla con `NETSDK1139: The target platform identifier gtk was not recognized`; no existe workload `gtk` en los feeds de Windows (`dotnet workload search gtk` vacío) y no hay GTK3 nativo instalado. Docker tampoco está instalado.
+- **WSL2: SÍ es viable.** WSL 2.3.24 ya está habilitado (default v2), hipervisor activo y WSLg 1.0.65 disponible para GUI; **no hay ninguna distro instalada**. `wsl --list --online` ofrece `Ubuntu`.
+- **Ruta recomendada:** instalar Ubuntu 24.04, .NET SDK 8.0.2xx y el workload GTK; clonar el repo dentro del filesystem de WSL (`~/repos/maui-linux`), no en `/mnt/d`, por rendimiento y permisos.
+- **SDK en Windows:** 8.0.427 y 10.0.401; ojo, `dotnet` toma el 10.0.401 porque `global.json` solo fija `tools.dotnet`, no `sdk.version`.
+
 ## Estructura
 
 ```
@@ -65,9 +73,9 @@ MAUI separa contratos (`src/Core`), controles (`src/Controls`) y plataformas. Ca
 
 ## Estado actual
 
-- **Funciona:** el fork y el upstream están sincronizados en `118de7c` (2025-10-10).
+- **Funciona:** el fork y el upstream están sincronizados en `118de7c` (2025-10-10); encima de esa base solo hay commits de contexto/documentación.
 - **En progreso:** upstream con 44 issues abiertos y ~10 PRs abiertos; varios PRs de nov–dic 2025 sin revisar/mergear.
-- **Rama / entorno relevante:** `master` (renombrada desde `main` el 2026-10-23; `origin/main` fue eliminada y `master` quedó como default del fork). El upstream `MauiGtk/maui-linux` sigue usando `main`; el único commit de 2026 en el upstream es la rama automática `housekeeping/fix-codeformatting` (2026-03-24).
+- **Rama / entorno relevante:** `develop` (rama de trabajo, creada 2026-10-26 desde `master`); `master` es la default del fork y solo recibe merges. `origin/main` fue eliminada al renombrar; el upstream `MauiGtk/maui-linux` sigue usando `main`. El único commit de 2026 en el upstream es la rama automática `housekeeping/fix-codeformatting` (2026-03-24).
 - **Actividad:** el sitio mauigtk.net sigue publicando (blog de 2026-03-25), pero el código del upstream (`main`) lleva ~1 año sin merges.
 
 ## Decisiones
@@ -98,7 +106,7 @@ MAUI separa contratos (`src/Core`), controles (`src/Controls`) y plataformas. Ca
 
 **Trabajo de fondo (sin fecha):**
 
-- [ ] Instalar WSL2 + Ubuntu 24.04 con .NET 8 y el workload GTK.
+- [ ] Instalar la distro **Ubuntu 24.04 en WSL2** (WSL ya está habilitado, sin distro), .NET SDK 8.0.2xx, manifest/workload GTK y libs GTK3; clonar el repo dentro del filesystem de WSL. Windows nativo ya está descartado (ver **Entorno de este PC**).
 - [ ] Compilar `Microsoft.Maui.Gtk.slnf` y ejecutar `Controls.Sample.Gtk`.
 - [ ] Revisar los issues abiertos del upstream y reproducir los más accesibles.
 - [ ] Elegir un primer aporte pequeño (test o fix de un mapper) y abrir PR desde una rama del fork.
@@ -106,7 +114,7 @@ MAUI separa contratos (`src/Core`), controles (`src/Controls`) y plataformas. Ca
 
 ## Trampas conocidas
 
-- **Windows nativo no compila GTK:** el TFM `net8.0-gtk` necesita Linux/WSL. El PR upstream #111 ("Changes to build and run it on Windows 10 with WSL") sigue abierto.
+- **Windows nativo no compila GTK:** confirmado en este PC con `NETSDK1139` (plataforma `gtk` no reconocida). El TFM `net8.0-gtk` necesita Linux/WSL. El PR upstream #111 ("Changes to build and run it on Windows 10 with WSL") sigue abierto.
 - **Manifest de GtkSharp:** la detección automática del workload falla (GtkSharp #355); hay que descargar el `.nupkg` del manifest y descomprimirlo en `sdk-manifests/8.0.200/gtksharp.net.sdk.gtk`.
 - **`_IncludeAndroid` viene en `true`** en `Directory.Build.Override.props`; el CI lo desactiva con `sed` antes de compilar GTK. En local conviene ponerlo vacío.
 - **`global.json` fija `tools.dotnet` en 7.0.203**, pero el build real usa 8.0.2xx; no confundir esa versión con la del SDK de compilación.
@@ -119,3 +127,4 @@ MAUI separa contratos (`src/Core`), controles (`src/Controls`) y plataformas. Ca
 
 - 2026-10-23 — Análisis de fork vs upstream, clonado del fork, `upstream` configurado y contexto creado.
 - 2026-10-23 — Rama local y remota renombrada `main` → `master`; `master` puesta como default en GitHub y `origin/main` eliminada. Queda pendiente adaptar 4 workflows y revisar protección/PRs.
+- 2026-10-26 — Validación del PC: Windows nativo descartado (`NETSDK1139`, sin workload `gtk`); WSL2 2.3.24 operativo con WSLg pero sin distro instalada. `develop` creada como rama de trabajo. Actualizado `CONTEXT.local.md` con el entorno validado.
