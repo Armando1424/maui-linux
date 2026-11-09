@@ -386,3 +386,6 @@ snapshots-diff/
 *.keystore
 secrets.json
 .secrets/
+
+# Graphify outputs
+graphify-out/
