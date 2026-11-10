@@ -30,6 +30,9 @@ jobs:
             --password "${{ secrets.GITHUB_TOKEN }}" \
             --store-password-in-clear-text \
             --configfile NuGet.config
+          dotnet nuget add source "https://api.nuget.org/v3/index.json" \
+            --name nuget.org \
+            --configfile NuGet.config
 
       - name: Install GTK dependencies
         run: |
