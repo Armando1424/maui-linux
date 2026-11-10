@@ -85,7 +85,13 @@ jobs:
 
       - name: Run the GTK sample (20s smoke)
         run: |
-          cd src/Controls/samples/Controls.Sample.Gtk/bin/Release/net10.0-gtk/linux-arm64
+          SAMPLE=$(find src/Controls/samples/Controls.Sample.Gtk/bin/Release -name 'Controls.Sample.Gtk.dll' | head -1)
+          if [ -z "$SAMPLE" ]; then
+            echo "The sample was not built." >&2
+            exit 1
+          fi
+
+          cd "$(dirname "$SAMPLE")"
           set +e
           timeout 20 xvfb-run -a dotnet Controls.Sample.Gtk.dll
           rc=$?
