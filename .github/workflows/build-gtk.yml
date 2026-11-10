@@ -53,7 +53,7 @@ jobs:
           </Project>
           EOF
 
-          dotnet restore "$WORK/fetch.csproj"
+          dotnet restore "$WORK/fetch.csproj" --configfile NuGet.config
 
           NUPKG=$(find "$HOME/.nuget/packages/gtksharp.net.sdk.gtk.manifest-$BAND/$VERSION" -name '*.nupkg' | head -1)
           if [ -z "$NUPKG" ]; then
