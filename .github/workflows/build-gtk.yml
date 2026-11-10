@@ -1,14 +1,18 @@
 name: Build Controls.Sample.Gtk
 on: [push, pull_request]
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   build_and_test:
     name: Build & Test
     runs-on: ubuntu-24.04
     env:
-      GtkSharpVersion: 3.24.24.117-develop
-      GtkSharpManifestVersion: 8.0.200
-      DotnetVersion: 8.0.200
+      GtkSharpVersion: 3.24.24.200
+      GtkSharpManifestBand: 10.0.400
+      DotnetVersion: 10.0.403
     steps:
       - name: Checkout MAUI repo
         uses: actions/checkout@v4
@@ -18,34 +22,85 @@ jobs:
         with:
           dotnet-version: ${{ env.DotnetVersion }}
 
+      - name: Configure GitHub Packages
+        run: |
+          dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --name github \
+            --username "${{ github.repository_owner }}" \
+            --password "${{ secrets.GITHUB_TOKEN }}" \
+            --store-password-in-clear-text \
+            --configfile NuGet.config
+
+      - name: Install GTK dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb libgtk-3-dev
+
       - name: Install gtk workload
         run: |
-            # For some reason automatic workload manifest detection doesn't work (see https://github.com/GtkSharp/GtkSharp/issues/355#issuecomment-1446262239), so download and uzip mainfest file manually
-            dotnet nuget add source --name nuget.org "https://api.nuget.org/v3/index.json"
-            wget https://www.nuget.org/api/v2/package/gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}/$GtkSharpVersion -O gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}.nupkg            
-            DOTNET_DIR=/usr/share/dotnet
-            WORKLOAD_MANIFEST_DIR=$DOTNET_DIR/sdk-manifests/${{ env.DotnetVersion }}/gtksharp.net.sdk.gtk
-            mkdir -p $WORKLOAD_MANIFEST_DIR
-            unzip -j gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}.nupkg "data/*" -d $WORKLOAD_MANIFEST_DIR/
-            rm gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}.nupkg
-            chmod 764 $WORKLOAD_MANIFEST_DIR/*
-            dotnet workload search
-            dotnet workload install gtk --skip-manifest-update
+          BAND="${GtkSharpManifestBand}"
+          VERSION="${GtkSharpVersion}"
+          WORK=$(mktemp -d)
+
+          cat > "$WORK/fetch.csproj" <<EOF
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+              <TargetFramework>net10.0</TargetFramework>
+            </PropertyGroup>
+            <ItemGroup>
+              <PackageDownload Include="GtkSharp.NET.Sdk.Gtk.Manifest-$BAND" Version="[$VERSION]" />
+            </ItemGroup>
+          </Project>
+          EOF
+
+          dotnet restore "$WORK/fetch.csproj"
+
+          NUPKG=$(find "$HOME/.nuget/packages/gtksharp.net.sdk.gtk.manifest-$BAND/$VERSION" -name '*.nupkg' | head -1)
+          if [ -z "$NUPKG" ]; then
+            echo "Could not download the GtkSharp workload manifest." >&2
+            exit 1
+          fi
+
+          DOTNET_DIR=$(dirname "$(readlink -f "$(which dotnet)")")
+          MANIFEST_DIR="$DOTNET_DIR/sdk-manifests/$BAND/GtkSharp.NET.Sdk.Gtk"
+          mkdir -p "$MANIFEST_DIR"
+          unzip -j "$NUPKG" 'data/*' -d "$MANIFEST_DIR"
+          chmod -R u+rw "$MANIFEST_DIR"
+          rm -rf "$WORK"
+
+          dotnet workload search
+          dotnet workload install gtk --skip-manifest-update
+
       - name: Generate pre-release version suffix
         run: dotnet fsi nugetPreRelease.fsx "" > PreReleaseVersionSuffix.txt
+
       - name: Build MAUI
         run: |
-            sed -i 's/_IncludeAndroid>true/_IncludeAndroid>/g' Directory.Build.Override.props
-            dotnet build Microsoft.Maui.BuildTasks.slnf
-            dotnet build -c Release Microsoft.Maui.Gtk.slnf
+          sed -i 's/_IncludeAndroid>true/_IncludeAndroid>/g' Directory.Build.Override.props
+          dotnet build Microsoft.Maui.BuildTasks.slnf
+          dotnet build -c Release Microsoft.Maui.Gtk.slnf
+
+      - name: Run the GTK sample (20s smoke)
+        run: |
+          cd src/Controls/samples/Controls.Sample.Gtk/bin/Release/net10.0-gtk/linux-arm64
+          set +e
+          timeout 20 xvfb-run -a dotnet Controls.Sample.Gtk.dll
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ] && [ "$rc" -ne 124 ]; then
+            echo "The sample exited with $rc" >&2
+            exit "$rc"
+          fi
+
       - name: Pack MAUI
         run: dotnet pack Microsoft.Maui.Gtk.Packages.slnf
+
       - name: Upload binaries to nuget (if tag or main branch, and nugetKey is present)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NUGET_KEY: ${{ secrets.NUGET_KEY }}
         if: ${{ env.NUGET_KEY != ''  && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) }}
-        run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate        
+        run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
   dotnet-format:
     needs: build_and_test

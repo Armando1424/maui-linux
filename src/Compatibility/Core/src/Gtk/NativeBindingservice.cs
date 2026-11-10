@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml.Internals;
 
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.Gtk.NativeBindingService))]
@@ -7,6 +8,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Gtk
 {
 	class NativeBindingService : INativeBindingService
 	{
+		[UnconditionalSuppressMessage(
+			"Trimming",
+			"IL2075",
+			Justification = "GTK desktop applications are not trimmed; the property name comes from XAML.")]
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
 			var view = target as global::Gtk.Widget;

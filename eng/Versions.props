@@ -1,11 +1,11 @@
 <Project>
   <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
-    <MicrosoftMauiPreviousDotNetReleasedVersion>7.0.101</MicrosoftMauiPreviousDotNetReleasedVersion>
+    <MicrosoftMauiPreviousDotNetReleasedVersion>8.0.100</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>8.0.100</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>10.0.100</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>8.0.0</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>10.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>8.0.5</SystemTextJsonPackageVersion>
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
@@ -53,12 +53,12 @@
     <MicrosoftCodeAnalysisNetAnalyzersVersion>8.0.0</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
-    <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
-    <SystemMemoryPackageVersion>4.5.5</SystemMemoryPackageVersion>
-    <SystemBuffersPackageVersion>4.5.1</SystemBuffersPackageVersion>
+    <SystemNumericsVectorsVersion>4.6.1</SystemNumericsVectorsVersion>
+    <SystemMemoryPackageVersion>4.6.3</SystemMemoryPackageVersion>
+    <SystemBuffersPackageVersion>4.6.1</SystemBuffersPackageVersion>
     <SystemIOUnmanagedMemoryStreamPackageVersion>4.3.0</SystemIOUnmanagedMemoryStreamPackageVersion>
     <SystemObjectModelPackageVersion>4.3.0</SystemObjectModelPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>6.1.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <_MicrosoftWebWebView2Version>1.0.2151.40</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
@@ -94,7 +94,7 @@
     <XunitRunnerVisualStudioPackageVersion>2.4.5</XunitRunnerVisualStudioPackageVersion>
     <NSubstitutePackageVersion>4.3.0</NSubstitutePackageVersion>
     <CoverletCollectorPackageVersion>3.2.0</CoverletCollectorPackageVersion>
-    <GtkSharpPackageVersion>3.24.24.95</GtkSharpPackageVersion>
+    <GtkSharpPackageVersion>3.24.24.200</GtkSharpPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <VersionBand Condition=" '$(VersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</VersionBand>
