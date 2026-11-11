@@ -48,6 +48,8 @@ run_once() {
   done
 
   kill "$pid" 2>/dev/null
+  pkill -P "$pid" 2>/dev/null
+  pkill -f 'Controls.Sample.Gtk.dll' 2>/dev/null
   wait "$pid" 2>/dev/null
   rm -f "$log"
   echo "$line"
