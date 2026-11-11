@@ -48,9 +48,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
 		}
 
-		[MissingMapper("not implemented in the GTK backend yet")]
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			if (handler.PlatformView is { } platformView)
+				platformView.Direction = itemsView.FlowDirection switch
+				{
+					FlowDirection.RightToLeft => Gtk.TextDirection.Rtl,
+					FlowDirection.LeftToRight => Gtk.TextDirection.Ltr,
+					_ => Gtk.TextDirection.None,
+				};
 		}
 
 		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -58,7 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.PlatformView.UpdateVisibility(itemsView);
 		}
 
-		[MissingMapper("not implemented in the GTK backend yet")]
+		[MissingMapper("the GTK list does not keep the scroll position while the items change")]
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}

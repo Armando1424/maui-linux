@@ -35,7 +35,7 @@ dispatcher, handler registry). Use `HandlerTestContext.Pump()` after actions
 that go through `Gtk.Application.Invoke` (for example, a button click) so the
 posted callback runs.
 
-## Covered handlers (61 tests)
+## Covered handlers (64 tests)
 
 | Handler | Tests |
 |:--|--:|
@@ -49,7 +49,7 @@ posted callback runs.
 | `ActivityIndicatorHandler` | 3 (running, stopped, update) |
 | `LayoutHandler` | 5 (add, multiple, remove, clear, insert) |
 | `NavigationView` | 6 (root, push, push replaces, pop, pop disconnects, 25 cycles) |
-| `MappingTests` | 11 (image aspect, editor placeholder/max length/alignment, entry clear button, picker title, refresh view, indicator, time format, z-index, page title) |
+| `MappingTests` | 14 (image aspect, editor placeholder/max length/alignment, entry clear button, picker title, refresh view, indicator, time format, z-index, page title, tabbed page, list view, table view) |
 
 The layout tests found a real bug: `LayoutView` removed the native widget but
 kept the entry in its `_children` list, so the next draw touched a freed
@@ -110,7 +110,12 @@ Remaining gaps (all documented with `[MissingMapper("...")]`):
 | Animated images | drawn as the first frame |
 | Editor letter spacing | Pango attributes are not applied to buffers |
 | `Picker` title color | the ComboBox has no title element |
-| `TabbedPage`, `CarouselView`/`CollectionView`, compatibility `ListView`/`TableView` | platform widgets not implemented yet |
+| `CarouselView` loop/peek/bounce, collection scroll mode | not implemented by the GTK layout managers |
+| `TableView` row height, `ListView` grouping | GTK rows follow their content; grouping is not implemented |
+
+`TabbedPage` is now a `Gtk.Notebook`; the compatibility `ListView` and
+`TableView` render their items and cells with `Gtk.ListBox`/boxes (no
+virtualization, grouping or per-row height).
 
 `SwitchHandler` now maps both ways: the native `state-set` signal updates
 `IsToggled` when the user toggles the switch. Programmatic changes in a headless

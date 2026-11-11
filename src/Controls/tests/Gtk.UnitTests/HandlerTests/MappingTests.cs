@@ -197,4 +197,67 @@ public class MappingTests
 
 		((IElementHandler)handler).DisconnectHandler();
 	}
+
+	[GtkFact]
+	public void TabbedPageCreatesNotebookPages()
+	{
+		var window = new global::Gtk.Window("tabs");
+		var tabbed = new TabbedPage
+		{
+			Children =
+			{
+				new ContentPage { Title = "Uno", Content = new Label { Text = "uno" } },
+				new ContentPage { Title = "Dos", Content = new Label { Text = "dos" } },
+			},
+		};
+
+		var handler = new TabbedViewHandler();
+		handler.SetMauiContext(HandlerTestContext.CreateWithWindow(window));
+		handler.SetVirtualView(tabbed);
+
+		var native = handler.PlatformView!;
+		Assert.Equal(2, native.Children.Length);
+		Assert.Equal(0, native.CurrentPage);
+
+		tabbed.CurrentPage = tabbed.Children[1];
+		Assert.Equal(1, native.CurrentPage);
+
+		((IElementHandler)handler).DisconnectHandler();
+	}
+
+	[GtkFact]
+	public void ListViewRendersRows()
+	{
+		var list = new ListView { ItemsSource = new[] { "uno", "dos", "tres" } };
+		var handler = new Microsoft.Maui.Controls.Handlers.Compatibility.ListViewHandler();
+		handler.SetMauiContext(HandlerTestContext.Context);
+		handler.SetVirtualView(list);
+
+		Assert.Equal(3, handler.PlatformView!.Rows.Count);
+
+		((IElementHandler)handler).DisconnectHandler();
+	}
+
+	[GtkFact]
+	public void TableViewRendersSections()
+	{
+		var table = new TableView
+		{
+			Root = new TableRoot
+			{
+				new TableSection("Sección")
+				{
+					new TextCell { Text = "fila" },
+				},
+			},
+		};
+
+		var handler = new Microsoft.Maui.Controls.Handlers.Compatibility.TableViewHandler();
+		handler.SetMauiContext(HandlerTestContext.Context);
+		handler.SetVirtualView(table);
+
+		Assert.NotNull(handler.PlatformView);
+
+		((IElementHandler)handler).DisconnectHandler();
+	}
 }

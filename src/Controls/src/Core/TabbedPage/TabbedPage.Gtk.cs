@@ -1,50 +1,113 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls
 {
-
 	public partial class TabbedPage
 	{
+		bool _syncingTabs;
 
-		[MissingMapper("TabbedPage is not implemented on GTK yet")]
 		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)
-		{ }
+		{
+			if (handler.PlatformView is not TabbedView platformView)
+				return;
 
-		[MissingMapper("TabbedPage is not implemented on GTK yet")]
+			if (view.BarBackground is SolidColorBrush brush)
+				platformView.UpdateBarColors(brush.Color, null);
+		}
+
 		internal static void MapBarBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
-		{ }
+		{
+			if (handler.PlatformView is TabbedView platformView)
+				platformView.UpdateBarColors(view.BarBackgroundColor, null);
+		}
 
-		[MissingMapper("TabbedPage is not implemented on GTK yet")]
 		internal static void MapBarTextColor(ITabbedViewHandler handler, TabbedPage view)
-		{ }
+		{
+			if (handler.PlatformView is TabbedView platformView)
+				platformView.UpdateBarColors(null, view.BarTextColor);
+		}
 
-		[MissingMapper("TabbedPage is not implemented on GTK yet")]
 		internal static void MapUnselectedTabColor(ITabbedViewHandler handler, TabbedPage view)
-		{ }
+		{
+			if (handler.PlatformView is TabbedView platformView)
+				platformView.UpdateTabColors(view.SelectedTabColor, view.UnselectedTabColor);
+		}
 
-		[MissingMapper("TabbedPage is not implemented on GTK yet")]
 		internal static void MapSelectedTabColor(ITabbedViewHandler handler, TabbedPage view)
-		{ }
+		{
+			if (handler.PlatformView is TabbedView platformView)
+				platformView.UpdateTabColors(view.SelectedTabColor, view.UnselectedTabColor);
+		}
 
-		[MissingMapper("TabbedPage is not implemented on GTK yet")]
 		internal static void MapItemsSource(ITabbedViewHandler handler, TabbedPage view)
-		{ }
+		{
+			view.SyncTabs();
+		}
 
-		[MissingMapper("TabbedPage is not implemented on GTK yet")]
+		[MissingMapper("creating pages from an ItemTemplate is not implemented on GTK")]
 		internal static void MapItemTemplate(ITabbedViewHandler handler, TabbedPage view)
-		{ }
+		{
+		}
 
-		[MissingMapper("TabbedPage is not implemented on GTK yet")]
 		internal static void MapSelectedItem(ITabbedViewHandler handler, TabbedPage view)
-		{ }
+		{
+			if (handler.PlatformView is not TabbedView platformView)
+				return;
 
-		[MissingMapper("TabbedPage is not implemented on GTK yet")]
+			if (view.SelectedItem is Page selectedPage)
+				platformView.SetCurrent(selectedPage);
+		}
+
 		internal static void MapCurrentPage(ITabbedViewHandler handler, TabbedPage view)
-		{ }
+		{
+			if (handler.PlatformView is TabbedView platformView && view.CurrentPage is { } current)
+				platformView.SetCurrent(current);
+		}
 
+		void SyncTabs()
+		{
+			if (_syncingTabs || Handler?.PlatformView is not TabbedView platformView || Handler.MauiContext is not { } context)
+				return;
+
+			_syncingTabs = true;
+
+			try
+			{
+				var pages = new List<(IView, global::Gtk.Widget, string?)>();
+
+				foreach (var page in Children)
+					pages.Add((page, page.ToPlatform(context), page.Title));
+
+				platformView.SetPages(pages, CurrentPage);
+
+				platformView.CurrentPageChanged -= OnPlatformPageChanged;
+				platformView.CurrentPageChanged += OnPlatformPageChanged;
+			}
+			finally
+			{
+				_syncingTabs = false;
+			}
+		}
+
+		void OnPlatformPageChanged(object? sender, int index)
+		{
+			if (_syncingTabs || sender is not TabbedView platformView)
+				return;
+
+			if (index >= 0 && index < platformView.Views.Count && platformView.Views[index] is Page page)
+				CurrentPage = page;
+		}
+
+		private protected override void OnHandlerChangedCore()
+		{
+			base.OnHandlerChangedCore();
+
+			if (Handler is { })
+				SyncTabs();
+		}
 	}
-
 }

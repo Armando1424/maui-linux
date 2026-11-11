@@ -1,55 +1,75 @@
 ﻿using System;
+using System.Collections.Generic;
+using Gtk;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public partial class TableViewHandler : ViewHandler<TableView, MauiTableView>
 	{
-		public static IPropertyMapper<TableView, TableViewHandler> Mapper = new PropertyMapper<TableView, TableViewHandler>(ViewRenderer.VisualElementRendererMapper) { [VisualElement.BackgroundProperty.PropertyName] = MapBackground, [TableView.RowHeightProperty.PropertyName] = MapRowHeight, };
+		public static IPropertyMapper<TableView, TableViewHandler> Mapper = new PropertyMapper<TableView, TableViewHandler>(
+			ViewRenderer.VisualElementRendererMapper)
+		{
+			[VisualElement.BackgroundProperty.PropertyName] = MapBackground,
+			[TableView.RowHeightProperty.PropertyName] = MapRowHeight,
+		};
 
 		public static CommandMapper<TableView, TableViewHandler> CommandMapper = new(ViewRenderer.VisualElementRendererCommandMapper) { };
 
 		public TableViewHandler() : base(Mapper, CommandMapper) { }
 
-		public TableViewHandler(IPropertyMapper? mapper)
-			: base(mapper ?? Mapper, CommandMapper) { }
+		public TableViewHandler(IPropertyMapper? mapper) : base(mapper ?? Mapper, CommandMapper) { }
 
 		public TableViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper) { }
 
-		[MissingMapper("not implemented in the GTK backend yet")]
 		protected override MauiTableView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(TableView)}");
 
-			var view = new MauiTableView() { };
-
-			return view;
+			return new MauiTableView();
 		}
 
-		public override void SetVirtualView(IView view)
+		protected override void ConnectHandler(MauiTableView nativeView)
 		{
-			base.SetVirtualView(view);
-
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+			base.ConnectHandler(nativeView);
+			UpdateSections();
 		}
 
-
-		[MissingMapper("not implemented in the GTK backend yet")]
-		public static void MapRowHeight(TableViewHandler handler, IView view)
+		void UpdateSections()
 		{
-			if (handler.PlatformView is not { } platformView)
+			if (PlatformView is not { } platformView || MauiContext is not { } context || VirtualView is not { } table)
 				return;
 
-			UpdateRowHeight(handler);
+			var sections = new List<Widget>();
+
+			foreach (var section in table.Root)
+			{
+				var box = new Gtk.Box(Orientation.Vertical, 0);
+
+				if (!string.IsNullOrEmpty(section.Title))
+				{
+					box.PackStart(new Gtk.Label(section.Title)
+					{
+						Halign = Align.Start,
+						Xalign = 0,
+						Margin = 6,
+					}, false, false, 0);
+				}
+
+				foreach (var cell in section)
+					box.PackStart(CellRowFactory.CreateCell(cell, context), false, false, 0);
+
+				sections.Add(box);
+			}
+
+			platformView.SetSections(sections);
 		}
 
-		[MissingMapper("not implemented in the GTK backend yet")]
-		static void UpdateRowHeight(TableViewHandler handler)
+		[MissingMapper("Gtk rows follow their content; there is no per-row height")]
+		public static void MapRowHeight(TableViewHandler handler, IView view)
 		{
-			var platformView = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-			var mauiContext = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			var virtualView = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			handler.UpdateSections();
 		}
 	}
 }
