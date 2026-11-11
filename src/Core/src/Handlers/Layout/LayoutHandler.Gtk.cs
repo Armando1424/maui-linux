@@ -42,8 +42,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(LayoutView nativeView)
 		{
+			// The children are destroyed together with the layout when the
+			// platform view is disposed, so there is nothing to clear here.
 			base.DisconnectHandler(nativeView);
-			PlatformView.ClearChildren();
 		}
 
 		public void Add(IView child)

@@ -3,6 +3,15 @@
 
 	public partial class ViewHandler
 	{
+		partial void DisconnectingHandler(global::Gtk.Widget platformView)
+		{
+			// Gtk# widgets are not collected while GTK still tracks them, so a
+			// disconnected handler would leak one native widget per cycle. Free
+			// it when it is no longer inside a container; parented widgets keep
+			// living until their container releases them.
+			if (platformView is { Parent: null } widget && widget is not global::Gtk.Window)
+				widget.Dispose();
+		}
 
 		[MissingMapper]
 		static partial void MappingFrame(IViewHandler handler, IView view)

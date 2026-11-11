@@ -68,8 +68,11 @@ namespace Microsoft.Maui.Platform
 		{
 			// stack top is last
 			var page = request.NavigationStack.Last();
+			var previousStack = _navigationStack;
+
 			_navigationStack = request.NavigationStack;
 			var newPageWidget = page.ToPlatform(_mauiContext!);
+
 
 			if (_pageWidget is null)
 			{
@@ -83,6 +86,28 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_pageWidget = newPageWidget;
+
+			DisconnectPagesRemovedFromStack(previousStack, request.NavigationStack);
+		}
+
+		/// <summary>
+		/// Pages that leave the stack keep their handlers (and native widgets)
+		/// alive unless they are disconnected explicitly. Without this, every
+		/// push/pop cycle leaks the platform view of the popped page.
+		/// </summary>
+		void DisconnectPagesRemovedFromStack(
+			IReadOnlyList<IView> previousStack,
+			IReadOnlyList<IView> currentStack)
+		{
+			foreach (var view in previousStack)
+			{
+				if (currentStack.Any(current => ReferenceEquals(current, view)))
+					continue;
+
+				// Disconnecting the handler releases the native widget too.
+				if (view.Handler is { })
+					view.Handler = null;
+			}
 		}
 
 	}
