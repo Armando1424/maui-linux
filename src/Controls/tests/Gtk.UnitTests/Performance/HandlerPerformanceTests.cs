@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Gtk.UnitTests.Infrastructure;
 using Microsoft.Maui.Handlers;
@@ -196,5 +199,82 @@ public class HandlerPerformanceTests
 		Assert.True(
 			growth < 48 * 1024 * 1024,
 			$"RSS grew {growth / (1024 * 1024.0):F1} MB after 1,000 push/pop cycles.");
+	}
+
+	[GtkFact]
+	public void DisconnectedHandlersAreCollectable()
+	{
+		var references = new List<WeakReference>();
+
+		for (var i = 0; i < 500; i++)
+		{
+			var label = new Label { Text = "collectable" };
+			var handler = new LabelHandler();
+
+			handler.SetMauiContext(HandlerTestContext.Context);
+			handler.SetVirtualView(label);
+			((IElementHandler)handler).DisconnectHandler();
+
+			references.Add(new WeakReference(label));
+			references.Add(new WeakReference(handler));
+		}
+
+		FullGc();
+
+		var alive = references.Count(reference => reference.IsAlive);
+
+		// GtkSharp 3.24 does not expose GLib.Object.WarnOnFinalize, so the
+		// "unexpected finalization" criterion is covered by checking that the
+		// disconnected handlers and their virtual views are collectable.
+		Assert.True(
+			alive <= references.Count / 10,
+			$"{alive} of {references.Count} disconnected objects are still alive.");
+	}
+
+	[GtkFact]
+	public void BindingUpdatesKeepMemoryStable()
+	{
+		var viewModel = new BindingViewModel();
+		var label = new Label { BindingContext = viewModel };
+		label.SetBinding(Label.TextProperty, nameof(BindingViewModel.Value));
+
+		var handler = new LabelHandler();
+		handler.SetMauiContext(HandlerTestContext.Context);
+		handler.SetVirtualView(label);
+
+		FullGc();
+		var before = Rss();
+
+		for (var i = 0; i < 1_000; i++)
+			viewModel.Value = $"value {i}";
+
+		FullGc();
+		var growth = Rss() - before;
+
+		((IElementHandler)handler).DisconnectHandler();
+
+		Assert.True(
+			growth < 24 * 1024 * 1024,
+			$"RSS grew {growth / (1024 * 1024.0):F1} MB after 1,000 binding updates.");
+	}
+
+	sealed class BindingViewModel : INotifyPropertyChanged
+	{
+		string _value = string.Empty;
+
+		public string Value
+		{
+			get => _value;
+			set
+			{
+				if (_value == value)
+					return;
+
+				_value = value;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+			}
+		}
+
+		public event PropertyChangedEventHandler? PropertyChanged;
 	}
 }

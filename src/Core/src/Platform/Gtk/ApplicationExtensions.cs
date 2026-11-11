@@ -33,6 +33,12 @@ public static class ApplicationExtensions
 		mainWindow.ShowAll();
 
 		mainWindow.Present();
+
+		if (Environment.GetEnvironmentVariable("MAUI_STARTUP_PROBE") == "1")
+		{
+			var elapsed = (DateTime.Now - System.Diagnostics.Process.GetCurrentProcess().StartTime).TotalMilliseconds;
+			Console.WriteLine($"MAUI_STARTUP_MS={elapsed:F0}");
+		}
 	}
 
 }

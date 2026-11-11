@@ -74,7 +74,7 @@ xvfb-run -a dotnet test src/Controls/tests/Gtk.UnitTests \
   -c Release -p:_IncludeAndroid= --filter "Category=Performance"
 ```
 
-They cover handler churn, label updates, measure/arrange and push/pop cycles.
+They cover handler churn, label updates, measure/arrange, push/pop cycles, bindings and that disconnected handlers are collectable. Startup and BenchmarkDotNet live in `eng/perf/startup.sh` and `eng/benchmarks/run.sh`.
 Thresholds and the Pi baseline are in `docs/performance-gtk.md`. The 30 minute
 soak lives in `eng/soak/gtk-soak.sh`.
 

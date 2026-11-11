@@ -110,14 +110,12 @@ jobs:
             exit "$rc"
           fi
 
-      - name: GTK handler performance tests (advisory)
-        continue-on-error: true
+      - name: GTK handler performance tests
         run: |
           xvfb-run -a dotnet test src/Controls/tests/Gtk.UnitTests/Gtk.UnitTests.csproj \
             -c Release --no-build --filter "Category=Performance"
 
-      - name: GTK soak test (5 min, advisory)
-        continue-on-error: true
+      - name: GTK soak test (5 min)
         run: eng/soak/gtk-soak.sh --minutes 5 --no-build --out artifacts/soak
 
       - name: Upload soak results
@@ -135,7 +133,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NUGET_KEY: ${{ secrets.NUGET_KEY }}
-        if: ${{ env.NUGET_KEY != ''  && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) }}
+        if: ${{ env.NUGET_KEY != ''  && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')) }}
         run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
   dotnet-format:
