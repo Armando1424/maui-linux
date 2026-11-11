@@ -34,7 +34,13 @@ Measured with `Release`, `net10.0-gtk`, GtkSharp `3.24.24.200`.
 | Layout measure/arrange | 10k cycles < 20 s | 20 s |
 | Push/pop | 1k cycles, 1 child, RSS +< 48 MB | 48 MB |
 | Soak, 2 min | RSS +18 MB, CPU 46% | — |
-| Soak, 30 min | see `artifacts/soak-30/` (local run) | +64 MB, 90% CPU |
+| Soak, 30 min | RSS +0.8 MB (plateau at ~120 MB), CPU 44% | +64 MB, 90% CPU |
+
+The 30 minute soak on the Pi stabilises at ~120 MB: the first minutes are
+warmup (56 MB → 120 MB) and the last quarter of the run grows only 0.8 MB. Use
+`--minutes 30` (or more) for meaningful numbers; a 1 minute run only measures
+warmup. The 44% CPU comes from the always-running `ActivityIndicator` in
+`Controls.Sample.Gtk`, not from an idle loop.
 
 RSS is read from `/proc/<pid>/status` and trimmed with `malloc_trim` before
 each measurement. The limits are deliberately generous: the Pi is a small,
@@ -71,4 +77,4 @@ them blocking once three consecutive runs are stable (Phase 5).
   theme caches). It is bounded by the test limit but not zero.
 - No BenchmarkDotNet project yet; the timing checks are threshold based.
 - The soak exercises the sample, not a real app; interaction is a simple
-  focus cycle.
+  focus cycle. A page without animations is needed to measure real idle CPU.

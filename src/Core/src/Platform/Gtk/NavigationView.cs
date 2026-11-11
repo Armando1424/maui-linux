@@ -73,7 +73,6 @@ namespace Microsoft.Maui.Platform
 			_navigationStack = request.NavigationStack;
 			var newPageWidget = page.ToPlatform(_mauiContext!);
 
-
 			if (_pageWidget is null)
 			{
 				PackEnd(newPageWidget, true, true, 0);
