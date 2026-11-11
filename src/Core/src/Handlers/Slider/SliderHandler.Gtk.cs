@@ -28,8 +28,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(nativeView);
 
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-
 			nativeView.ValueChanged -= OnNativeViewValueChanged;
 
 		}
@@ -58,11 +56,17 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateValue(slider);
 		}
 
-		[MissingMapper]
-		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider) { }
+		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider)
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.SetStyleColor(slider.MinimumTrackColor, "scale", "background-color", "trough > highlight");
+		}
 
-		[MissingMapper]
-		public static void MapMaximumTrackColor(ISliderHandler handler, ISlider slider) { }
+		public static void MapMaximumTrackColor(ISliderHandler handler, ISlider slider)
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.SetStyleColor(slider.MaximumTrackColor, "scale", "background-color", "trough");
+		}
 
 		public static void MapThumbColor(ISliderHandler handler, ISlider slider)
 		{

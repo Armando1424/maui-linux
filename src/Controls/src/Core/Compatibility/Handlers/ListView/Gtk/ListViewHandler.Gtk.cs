@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public ListViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper) { }
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		protected override MauiListView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ListView)}");
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 		}
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		public static void MapSelectedItem(ListViewHandler handler, IView view)
 		{
 			if (handler.PlatformView is not { } platformView)
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateSelectedItem(handler);
 		}
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		static void UpdateSelectedItem(ListViewHandler handler)
 		{
 			var platformView = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");

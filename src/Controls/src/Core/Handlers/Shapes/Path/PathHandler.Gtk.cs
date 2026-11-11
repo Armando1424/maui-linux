@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			handler.PlatformView?.UpdateShape(path);
 		}
 
-		[MissingMapper]
+		[MissingMapper("GTK has no render transforms for shapes")]
 		public static void MapRenderTransform(IShapeViewHandler handler, Path path) { }
 	}
 }

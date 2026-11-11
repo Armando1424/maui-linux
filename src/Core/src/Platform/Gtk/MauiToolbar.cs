@@ -1,4 +1,5 @@
 using Gtk;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
@@ -59,6 +60,81 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		Image? _titleIcon;
+
+		public Image? TitleIcon
+		{
+			get => _titleIcon;
+			set
+			{
+				if (_titleIcon is { })
+					Remove(_titleIcon);
+
+				_titleIcon = value;
+
+				if (value is { })
+				{
+					PackStart(value, false, false, 0);
+					ReorderChild(value, 1);
+					value.Show();
+				}
+			}
+		}
+
+		Widget? _titleView;
+
+		public Widget? TitleView
+		{
+			get => _titleView;
+			set
+			{
+				if (_titleView is { })
+					Remove(_titleView);
+
+				_titleView = value;
+
+				if (value is { })
+				{
+					PackStart(value, true, true, 0);
+					value.Show();
+				}
+			}
+		}
+
+		public Color? BarTextColor
+		{
+			set
+			{
+				if (value is { })
+					TitleLabel.UpdateTextColor(value);
+			}
+		}
+
+		public Color? BarBackgroundColor
+		{
+			set
+			{
+				if (value is { })
+					this.SetBackgroundColor(value);
+			}
+		}
+
+		public Color? IconColor
+		{
+			set
+			{
+				if (value is { })
+					BackButton.SetColor(value, "color");
+			}
+		}
+
+		public string? BackButtonTitle
+		{
+			set => BackButton.TooltipText = value;
+		}
+
+		public Box ItemsBox { get; }
+
 		public delegate void BackButtonClickedEventHandler(object? sender);
 
 		public event BackButtonClickedEventHandler? BackButtonClicked;
@@ -73,6 +149,10 @@ namespace Microsoft.Maui.Platform
 			BackButton.Clicked += (sender, args) => BackButtonClicked?.Invoke(sender);
 
 			PackStart(BackButton, false, false, 0);
+
+			ItemsBox = new Box(Orientation.Horizontal, 0);
+			PackEnd(ItemsBox, false, false, 0);
+
 			NoShowAll = true;
 		}
 	}

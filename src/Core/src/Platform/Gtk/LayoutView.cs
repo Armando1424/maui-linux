@@ -117,6 +117,29 @@ namespace Microsoft.Maui.Platform
 			QueueResize();
 		}
 
+		public void SetZIndex(IView view, int index)
+		{
+			var current = _children.FindIndex(c => ReferenceEquals(c.view, view));
+			if (current < 0)
+				return;
+
+			index = Math.Clamp(index, 0, _children.Count - 1);
+			if (current == index)
+				return;
+
+			var item = _children[current];
+			_children.RemoveAt(current);
+			_children.Insert(index, item);
+
+			// GTK draws and lays out children in container order.
+			foreach (var child in _children)
+				Remove(child.widget);
+			foreach (var child in _children)
+				Add(child.widget);
+
+			QueueDraw();
+		}
+
 		public void Add(IView view, Widget widget)
 		{
 			var index = _children.FindIndex(c => c.widget == widget);

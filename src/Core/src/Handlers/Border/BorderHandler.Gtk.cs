@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Handlers
 	public partial class BorderHandler : ViewHandler<IBorderView, BorderView>
 	{
 
-		[MissingMapper]
 		protected override BorderView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Border");

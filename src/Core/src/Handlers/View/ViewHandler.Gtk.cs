@@ -13,44 +13,43 @@
 				widget.Dispose();
 		}
 
-		[MissingMapper]
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
 			var platformView = handler.ToPlatform();
 			platformView.Arrange(view.Frame);
 		}
 
-		[MissingMapper]
+		[MissingMapper("GTK3 widgets cannot be translated without a transform container")]
 		public static void MapTranslationX(IViewHandler handler, IView view) { }
 
-		[MissingMapper]
+		[MissingMapper("GTK3 widgets cannot be translated without a transform container")]
 		public static void MapTranslationY(IViewHandler handler, IView view) { }
 
-		[MissingMapper]
+		[MissingMapper("GTK3 widgets cannot be scaled without a transform container")]
 		public static void MapScale(IViewHandler handler, IView view)
 		{
 			//handler.PlatformView.UpdateScale(view.Scale);
 		}
 
-		[MissingMapper]
+		[MissingMapper("GTK3 widgets cannot be scaled without a transform container")]
 		public static void MapScaleX(IViewHandler handler, IView view) { }
 
-		[MissingMapper]
+		[MissingMapper("GTK3 widgets cannot be scaled without a transform container")]
 		public static void MapScaleY(IViewHandler handler, IView view) { }
 
-		[MissingMapper]
+		[MissingMapper("GTK3 widgets cannot be rotated")]
 		public static void MapRotation(IViewHandler handler, IView view) { }
 
-		[MissingMapper]
+		[MissingMapper("GTK3 widgets cannot be rotated")]
 		public static void MapRotationX(IViewHandler handler, IView view) { }
 
-		[MissingMapper]
+		[MissingMapper("GTK3 widgets cannot be rotated")]
 		public static void MapRotationY(IViewHandler handler, IView view) { }
 
-		[MissingMapper]
+		[MissingMapper("there is no transform origin on GTK3 widgets")]
 		public static void MapAnchorX(IViewHandler handler, IView view) { }
 
-		[MissingMapper]
+		[MissingMapper("there is no transform origin on GTK3 widgets")]
 		public static void MapAnchorY(IViewHandler handler, IView view) { }
 
 		public static void MapToolbar(IViewHandler handler, IView view)

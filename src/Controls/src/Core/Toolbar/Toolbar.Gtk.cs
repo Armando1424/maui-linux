@@ -1,5 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls
 {
@@ -36,9 +38,11 @@ namespace Microsoft.Maui.Controls
 		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2) =>
 			MapIsVisible((IToolbarHandler)arg1, arg2);
 
-		[MissingMapper]
 		public static void MapBarTextColor(IToolbarHandler handler, Toolbar toolbar)
-		{ }
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.BarTextColor = toolbar.BarTextColor;
+		}
 
 		public static void MapIsVisible(IToolbarHandler handler, Toolbar toolbar)
 		{
@@ -50,29 +54,65 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateBackButtonVisibility(toolbar);
 		}
 
-		[MissingMapper]
 		public static void MapTitleIcon(IToolbarHandler handler, Toolbar toolbar)
-		{ }
+		{
+			if (handler.PlatformView is not { } platformView || handler.MauiContext is not { } context)
+				return;
 
-		[MissingMapper]
+			platformView.TitleIcon = toolbar.TitleIcon?.ToPlatform(context) as Gtk.Image;
+		}
+
 		public static void MapTitleView(IToolbarHandler handler, Toolbar toolbar)
-		{ }
+		{
+			if (handler.PlatformView is not { } platformView || handler.MauiContext is not { } context)
+				return;
 
-		[MissingMapper]
+			platformView.TitleView = toolbar.TitleView?.ToPlatform(context);
+		}
+
 		public static void MapIconColor(IToolbarHandler handler, Toolbar toolbar)
-		{ }
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.IconColor = toolbar.IconColor;
+		}
 
-		[MissingMapper]
 		public static void MapToolbarItems(IToolbarHandler handler, Toolbar toolbar)
-		{ }
+		{
+			if (handler.PlatformView is not { } platformView)
+				return;
 
-		[MissingMapper]
+			foreach (var child in platformView.ItemsBox.Children)
+				platformView.ItemsBox.Remove(child);
+
+			foreach (var item in toolbar.ToolbarItems)
+			{
+				var button = new Gtk.Button(item.Text ?? string.Empty)
+				{
+					Relief = Gtk.ReliefStyle.None,
+				};
+
+				button.Clicked += (_, _) =>
+				{
+					if (item.Command?.CanExecute(item.CommandParameter) == true)
+						item.Command.Execute(item.CommandParameter);
+				};
+
+				platformView.ItemsBox.PackStart(button, false, false, 0);
+				button.Show();
+			}
+		}
+
 		public static void MapBackButtonTitle(IToolbarHandler handler, Toolbar toolbar)
-		{ }
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.BackButtonTitle = toolbar.BackButtonTitle;
+		}
 
-		[MissingMapper]
 		public static void MapBarBackground(IToolbarHandler handler, Toolbar toolbar)
-		{ }
+		{
+			if (handler.PlatformView is { } platformView && toolbar.BarBackground is SolidColorBrush brush)
+				platformView.BarBackgroundColor = brush.Color;
+		}
 
 	}
 

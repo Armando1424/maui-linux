@@ -288,6 +288,8 @@ namespace Microsoft.Maui.Platform
 
 		public DateTime MaxDate { get; set; }
 
+		public Entry Entry => _comboBox.Entry;
+
 		public string? Format
 		{
 			get

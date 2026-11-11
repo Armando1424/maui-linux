@@ -117,10 +117,10 @@ namespace Microsoft.Maui.Handlers
 
 #endif
 
-		[MissingMapper]
 		public void UpdateZIndex(IView view)
 		{
-
+			if (PlatformView is { } platformView)
+				platformView.SetZIndex(view, view.ZIndex);
 		}
 
 		public static partial void MapBackground(ILayoutHandler handler, ILayout layout)

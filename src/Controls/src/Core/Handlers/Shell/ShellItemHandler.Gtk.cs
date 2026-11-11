@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		public void UpdateTitle()
 		{
 		}

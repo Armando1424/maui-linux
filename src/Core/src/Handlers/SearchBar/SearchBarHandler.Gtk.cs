@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 				nativeView.Alignment = searchBar.HorizontalTextAlignment.ToXyAlign();
 		}
 
-		[MissingMapper]
+		[MissingMapper("GTK's Entry has no vertical text alignment")]
 		public static void MapVerticalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 		}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		[MissingMapper]
+		[MissingMapper("GTK renders the placeholder with the theme color")]
 		public static void MapPlaceholderColor(IViewHandler handler, ISearchBar searchBar) { }
 
 		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
@@ -90,22 +90,25 @@ namespace Microsoft.Maui.Handlers
 				nativeView.Attributes = nativeView.Attributes.AttrListFor(searchBar.CharacterSpacing);
 		}
 
-		[MissingMapper]
+		[MissingMapper("GTK has no text prediction")]
 		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar)
+		{
+			if (handler.PlatformView is Gtk.Widget platformView)
+				platformView.SetStyleColor(searchBar.CancelButtonColor, "searchbar", "color", "entry > icon");
+		}
 
 		/// <summary>
 		/// Maps the abstract <see cref="ITextInput.IsSpellCheckEnabled"/> property to the platform-specific implementations.
 		/// </summary>
 		/// <param name="handler"> The associated handler.</param>
 		/// <param name="searchBar"> The associated <see cref="ISearchBar"/> instance.</param>
-		[MissingMapper]
+		[MissingMapper("spell checking follows the system input method")]
 		public static void MapIsSpellCheckEnabled(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapKeyboard(IViewHandler handler, ISearchBar searchBar) { }
+		[MissingMapper("the keyboard is a soft-keyboard concept; GTK has no equivalent")]
+		public static void MapKeyboard(IViewHandler handler, IView view) { }
 
 
 	}

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as MauiCarouselView)?.UpdatePosition();
 		}
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView) { }
 
 		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
@@ -28,10 +28,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as MauiCarouselView)?.UpdateIsSwipeEnabled();
 		}
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView) { }
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView) { }
 
 		public static void MapItemsLayout(CarouselViewHandler handler, CarouselView itemsView)

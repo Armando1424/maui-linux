@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Graphics.Platform.Gtk;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -9,20 +10,21 @@ namespace Microsoft.Maui.Handlers
 			return new MauiTimePicker();
 		}
 
-		[MissingMapper]
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker view)
 		{
 			handler.PlatformView?.UpdateFormat(view);
 		}
 
-		[MissingMapper]
 		public static void MapTime(ITimePickerHandler handler, ITimePicker view)
 		{
 			handler.PlatformView?.UpdateTime(view);
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker view) { }
+		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker view)
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.Attributes = platformView.Attributes.AttrListFor(view.CharacterSpacing);
+		}
 
 		public static void MapFont(ITimePickerHandler handler, ITimePicker view)
 		{
@@ -31,7 +33,9 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFont(view, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker) { }
+		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.PlatformView?.UpdateTextColor(timePicker.TextColor);
+		}
 	}
 }

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(PlatformView platformView)
 		{
-			base.DisconnectHandler(PlatformView);
+			base.DisconnectHandler(platformView);
 			PlatformView.Activated -= OnClicked;
 		}
 

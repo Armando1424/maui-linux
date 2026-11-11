@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
 		}
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.PlatformView.UpdateVisibility(itemsView);
 		}
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}

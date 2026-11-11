@@ -123,11 +123,11 @@ namespace Microsoft.Maui.Handlers
 				nativeView.Alignment = entry.HorizontalTextAlignment.ToXyAlign();
 		}
 
-		[MissingMapper]
+		[MissingMapper("GTK's Entry has no vertical text alignment")]
 		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry)
 		{ }
 
-		[MissingMapper]
+		[MissingMapper("GTK has no text prediction; desktop keyboards do not predict")]
 		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry) { }
 
 		public static void MapMaxLength(IEntryHandler handler, IEntry entry)
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdatePlaceholder(entry);
 		}
 
-		[MissingMapper]
+		[MissingMapper("GTK renders the placeholder with the theme color; there is no API to override it")]
 		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) { }
 
 		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry)
@@ -166,11 +166,13 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateSelectionLength(entry);
 		}
 
-		[MissingMapper]
+		[MissingMapper("the return key is a soft-keyboard concept; GTK has no equivalent")]
 		public static void MapReturnType(IEntryHandler handler, IEntry entry) { }
 
-		[MissingMapper]
-		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) { }
+		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry)
+		{
+			handler.PlatformView?.UpdateClearButton(entry);
+		}
 
 		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry)
 		{
@@ -180,7 +182,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Attributes = nativeView.Attributes.AttrListFor(entry.CharacterSpacing);
 		}
 
-		[MissingMapper]
 		public static void MapKeyboard(IEntryHandler handler, IEntry entry)
 		{
 			if (handler.PlatformView is not { } nativeView)
@@ -222,7 +223,7 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="handler"> The associated handler.</param>
 		/// <param name="entry"> The associated <see cref="IEntry"/> instance.</param>
-		[MissingMapper]
+		[MissingMapper("Gtk.Entry spell checking follows the system input method")]
 		public static void MapIsSpellCheckEnabled(IEntryHandler handler, IEntry entry) { }
 	}
 

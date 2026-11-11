@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using Gtk;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 
@@ -45,25 +47,37 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		[MissingMapper]
-		public static void MapImageSource(IButtonHandler handler, IImage image) { }
+		public static void MapImageSource(IButtonHandler handler, IImage image) =>
+			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		[MissingMapper]
-		public static void MapFont(IButtonHandler handler, IButton button) { }
+		public static async Task MapImageSourceAsync(IButtonHandler handler, IImage image)
+		{
+			if (handler.PlatformView is { })
+				await handler.ImageSourceLoader.UpdateImageSourceAsync();
+		}
+
+		public static void MapFont(IButtonHandler handler, ITextStyle button)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView?.UpdateFont(button, fontManager);
+		}
 
 		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
 			handler.PlatformView.WithPadding(button.Padding);
 		}
 
-		[MissingMapper]
-		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke) =>
+			handler.PlatformView?.UpdateBorderColor(buttonStroke.StrokeColor);
 
-		[MissingMapper]
-		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke) =>
+			handler.PlatformView?.UpdateBorderWidth(buttonStroke.StrokeThickness);
 
-		[MissingMapper]
-		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.UpdateCornerRadius(new CornerRadius(buttonStroke.CornerRadius));
+		}
 
 		void OnButtonPressEvent(object? o, ButtonPressEventArgs args)
 		{

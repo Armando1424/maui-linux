@@ -6,17 +6,20 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiImageButton CreatePlatformView() => new();
 
-		[MissingMapper]
-		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke) =>
+			handler.PlatformView?.UpdateBorderColor(buttonStroke.StrokeColor);
 
-		[MissingMapper]
-		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke) =>
+			handler.PlatformView?.UpdateBorderWidth(buttonStroke.StrokeThickness);
 
-		[MissingMapper]
-		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.UpdateCornerRadius(new CornerRadius(buttonStroke.CornerRadius));
+		}
 
-		[MissingMapper]
-		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton) { }
+		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton) =>
+			handler.PlatformView.WithPadding(imageButton.Padding);
 
 		partial class ImageButtonImageSourcePartSetter
 		{

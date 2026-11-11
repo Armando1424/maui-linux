@@ -212,8 +212,10 @@ namespace Microsoft.Maui.Handlers
 
 		private protected sealed override void OnDisconnectHandler(object platformView)
 		{
-			DisconnectingHandler((PlatformView)platformView);
+			// The handler still needs a usable widget to unsubscribe events, so
+			// the platform view is released after the handler cleanup.
 			OnDisconnectHandler((PlatformView)platformView);
+			DisconnectingHandler((PlatformView)platformView);
 		}
 #endif
 

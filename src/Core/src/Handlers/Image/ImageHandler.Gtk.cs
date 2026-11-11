@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Handlers
 			return img;
 		}
 
-		[MissingMapper]
 		public static void MapAspect(IImageHandler handler, IImage image)
 		{
 			if (handler.PlatformView is not { } platformView)
@@ -25,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.UpdateAspect(image);
 		}
 
-		[MissingMapper]
+		[MissingMapper("animated images are drawn as their first frame on GTK")]
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) { }
 
 		public static void MapSource(IImageHandler handler, IImage image) =>

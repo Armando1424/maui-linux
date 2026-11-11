@@ -1,5 +1,6 @@
 ﻿using Gtk;
 using System;
+using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -45,8 +46,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(textStyle.TextColor);
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IRadioButtonHandler handler, ITextStyle textStyle) { }
+		public static void MapCharacterSpacing(IRadioButtonHandler handler, ITextStyle textStyle)
+		{
+			if (handler.PlatformView is RadioButton radioButton && radioButton.Child is Label label)
+				label.Attributes = label.Attributes.AttrListFor(textStyle.CharacterSpacing);
+		}
 
 		public static void MapFont(IRadioButtonHandler handler, ITextStyle textStyle)
 		{
@@ -54,14 +58,27 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFont(textStyle, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapStrokeColor(IRadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapStrokeColor(IRadioButtonHandler handler, IRadioButton radioButton)
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.SetStyleColor(radioButton.StrokeColor, "radio", "border-color");
+		}
 
-		[MissingMapper]
-		public static void MapStrokeThickness(IRadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapStrokeThickness(IRadioButtonHandler handler, IRadioButton radioButton)
+		{
+			if (radioButton.StrokeThickness < 0)
+				return;
 
-		[MissingMapper]
-		public static void MapCornerRadius(IRadioButtonHandler handler, IRadioButton radioButton) { }
+			handler.PlatformView?.SetStyleValueNode(
+				$"{radioButton.StrokeThickness:0.##}px", "radiobutton", "border-width", "radio");
+		}
+
+		public static void MapCornerRadius(IRadioButtonHandler handler, IRadioButton radioButton)
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.SetStyleValueNode(
+					$"{radioButton.CornerRadius:0.##}px", "radiobutton", "border-radius", "radio");
+		}
 
 		void OnClicked(object? sender, EventArgs e)
 		{

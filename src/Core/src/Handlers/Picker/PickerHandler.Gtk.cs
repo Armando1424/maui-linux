@@ -52,9 +52,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(platformView);
 
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-
-			PlatformView.Changed -= OnPlatformViewChanged;
+			platformView.Changed -= OnPlatformViewChanged;
 		}
 
 		public static void SetValues(PickerHandler handler, IPicker virtualView)
@@ -113,8 +111,13 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateCharacterSpacing(view.CharacterSpacing);
 		}
 
-		[MissingMapper]
-		public static void MapTitle(PickerHandler handler, IPicker view) { }
+		public static void MapTitle(PickerHandler handler, IPicker view)
+		{
+			// GTK's ComboBox has no title bar; show it as a tooltip instead of
+			// dropping it silently.
+			if (handler.PlatformView is { } platformView)
+				platformView.TooltipText = view.Title;
+		}
 
 		public static void MapTextColor(PickerHandler handler, IPicker view)
 		{
@@ -126,10 +129,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateHorizontalTextAlignment(view.HorizontalTextAlignment);
 		}
 
-		[MissingMapper]
+		[MissingMapper("GTK's ComboBox has no title element to color")]
 		public static void MapTitleColor(PickerHandler handler, IPicker view) { }
 
-		[MissingMapper]
+		[MissingMapper("GTK's ComboBox entry has no vertical alignment")]
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker view) { }
 	}
 }

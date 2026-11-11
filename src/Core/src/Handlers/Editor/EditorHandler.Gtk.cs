@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Handlers
 	public partial class EditorHandler : ViewHandler<IEditor, TextView>
 	{
 
+		int _maxLength = -1;
+
 		protected override TextView CreatePlatformView()
 		{
 			return new() { WrapMode = WrapMode.WordChar };
@@ -54,7 +56,17 @@ namespace Microsoft.Maui.Handlers
 			if (sender != nativeView.Buffer)
 				return;
 
-			var text = nativeView.Buffer.Text;
+			var buffer = nativeView.Buffer;
+			var text = buffer.Text;
+
+			if (_maxLength >= 0 && text.Length > _maxLength)
+			{
+				// Gtk.TextBuffer has no insert-text cancellation flag, so the
+				// text is trimmed after the change.
+				buffer.Text = text[.._maxLength];
+				buffer.PlaceCursor(buffer.EndIter);
+				text = buffer.Text;
+			}
 
 			if (virtualView.Text != text)
 				virtualView.Text = text;
@@ -83,45 +95,58 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(editor.TextColor);
 		}
 
-		[MissingMapper]
-		public static void MapPlaceholder(IEditorHandler handler, IEditor editor) { }
+		public static void MapPlaceholder(IEditorHandler handler, IEditor editor)
+		{
+			handler.PlatformView?.UpdatePlaceholder(editor);
+		}
 
-		[MissingMapper]
-		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor) { }
+		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor)
+		{
+			handler.PlatformView?.UpdatePlaceholderColor(editor.PlaceholderColor);
+		}
 
-		[MissingMapper]
+		[MissingMapper("Gtk.TextView has no letter spacing; Pango attributes are not applied to buffers")]
 		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor)
 		{
 			// see: https://docs.gtk.org/gtk3/property.TextTag.letter-spacing.html
 		}
 
-		[MissingMapper]
-		public static void MapMaxLength(IEditorHandler handler, IEditor editor) { }
+		public static void MapMaxLength(IEditorHandler handler, IEditor editor)
+		{
+			if (handler is EditorHandler editorHandler)
+				editorHandler._maxLength = editor.MaxLength;
+		}
 
-		[MissingMapper]
+		[MissingMapper("GTK has no text prediction")]
 		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor) { }
 
-		[MissingMapper]
+		[MissingMapper("the keyboard is a soft-keyboard concept; GTK has no equivalent")]
 		public static void MapKeyboard(IEditorHandler handler, IEditor editor) { }
 
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) { }
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor)
+		{
+			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
+		}
 
-		[MissingMapper]
+		[MissingMapper("Gtk.TextView has no vertical text alignment")]
 		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) { }
 
-		[MissingMapper]
-		public static void MapCursorPosition(IEditorHandler handler, ITextInput editor) { }
+		public static void MapCursorPosition(IEditorHandler handler, ITextInput editor)
+		{
+			handler.PlatformView?.UpdateCursorPosition(editor);
+		}
 
-		[MissingMapper]
-		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) { }
+		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor)
+		{
+			handler.PlatformView?.UpdateSelectionLength(editor);
+		}
 
 		/// <summary>
 		/// Maps the abstract <see cref="ITextInput.IsSpellCheckEnabled"/> property to the platform-specific implementations.
 		/// </summary>
 		/// <param name="handler"> The associated handler.</param>
 		/// <param name="editor"> The associated <see cref="IEditor"/> instance.</param>
-		[MissingMapper]
+		[MissingMapper("spell checking follows the system input method")]
 		public static void MapIsSpellCheckEnabled(IEditorHandler handler, IEditor editor) { }
 
 	}

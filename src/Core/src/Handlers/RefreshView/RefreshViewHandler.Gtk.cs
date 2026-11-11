@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
@@ -9,16 +8,30 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override RefreshView CreatePlatformView() => new();
 
-		[MissingMapper]
-		public static void MapIsRefreshing(IRefreshViewHandler handler, IRefreshView refreshView) { }
+		public static void MapIsRefreshing(IRefreshViewHandler handler, IRefreshView refreshView)
+		{
+			if (handler.PlatformView is RefreshView platformView)
+				platformView.IsRefreshing = refreshView.IsRefreshing;
+		}
 
-		[MissingMapper]
-		public static void MapContent(IRefreshViewHandler handler, IRefreshView refreshView) { }
+		public static void MapContent(IRefreshViewHandler handler, IRefreshView refreshView)
+		{
+			if (handler.PlatformView is not RefreshView platformView || handler.MauiContext is not { } context)
+				return;
 
-		[MissingMapper]
-		public static void MapRefreshColor(IRefreshViewHandler handler, IRefreshView refreshView) { }
+			platformView.Content = refreshView.Content?.ToPlatform(context);
+		}
 
-		[MissingMapper]
-		public static void MapRefreshViewBackground(IRefreshViewHandler handler, IView view) { }
+		public static void MapRefreshColor(IRefreshViewHandler handler, IRefreshView refreshView)
+		{
+			if (handler.PlatformView is RefreshView platformView)
+				platformView.Spinner.SetStyleColor(refreshView.RefreshColor.ToColor(), "spinner", "color");
+		}
+
+		public static void MapRefreshViewBackground(IRefreshViewHandler handler, IView view)
+		{
+			if (handler.PlatformView is RefreshView platformView)
+				platformView.UpdateBackground(view);
+		}
 	}
 }

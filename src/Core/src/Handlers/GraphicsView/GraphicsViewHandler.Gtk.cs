@@ -12,8 +12,16 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateDrawable(graphicsView);
 		}
 
-		[MissingMapper]
-		public static void MapFlowDirection(IGraphicsViewHandler handler, IGraphicsView graphicsView) { }
+		public static void MapFlowDirection(IGraphicsViewHandler handler, IGraphicsView graphicsView)
+		{
+			if (handler.PlatformView is { } platformView)
+				platformView.Direction = graphicsView.FlowDirection switch
+				{
+					FlowDirection.RightToLeft => Gtk.TextDirection.Rtl,
+					FlowDirection.LeftToRight => Gtk.TextDirection.Ltr,
+					_ => Gtk.TextDirection.None,
+				};
+		}
 
 		public static void MapInvalidate(IGraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{

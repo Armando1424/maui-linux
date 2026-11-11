@@ -15,8 +15,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateProgress(progress);
 		}
 
-		[MissingMapper]
-		public static void MapProgressColor(IProgressBarHandler handler, IProgress progress) { }
+		public static void MapProgressColor(IProgressBarHandler handler, IProgress progress)
+		{
+			if (handler.PlatformView is Gtk.Widget platformView)
+				platformView.SetStyleColor(progress.ProgressColor, "progressbar", "background-color", "progress");
+		}
 
 	}
 }

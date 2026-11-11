@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public TableViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper) { }
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		protected override MauiTableView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(TableView)}");
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		public static void MapRowHeight(TableViewHandler handler, IView view)
 		{
 			if (handler.PlatformView is not { } platformView)
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateRowHeight(handler);
 		}
 
-		[MissingMapper]
+		[MissingMapper("not implemented in the GTK backend yet")]
 		static void UpdateRowHeight(TableViewHandler handler)
 		{
 			var platformView = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");

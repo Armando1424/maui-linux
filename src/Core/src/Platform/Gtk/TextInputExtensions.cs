@@ -48,6 +48,21 @@ namespace Microsoft.Maui
 
 		}
 
+		public static void UpdateClearButton(this Entry platformView, IEntry entry)
+		{
+			var show = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
+
+			platformView.SecondaryIconName = show ? "edit-clear-symbolic" : null;
+			platformView.SecondaryIconActivatable = show;
+
+			if (show && platformView.Data["maui-clear-button"] is null)
+			{
+				platformView.Data["maui-clear-button"] = "1";
+				platformView.IconPress += (sender, args) =>
+					platformView.Text = string.Empty;
+			}
+		}
+
 		public static void UpdateIsReadOnly(this Entry platformView, ITextInput entry)
 		{
 			platformView.IsEditable = !entry.IsReadOnly;

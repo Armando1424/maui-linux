@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics.Platform.Gtk;
 ﻿using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
@@ -46,8 +47,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.MaxDate = handler.VirtualView.MaximumDate;
 		}
 
-		[MissingMapper]
-		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			if (handler.PlatformView?.Entry is { } entry)
+				entry.Attributes = entry.Attributes.AttrListFor(datePicker.CharacterSpacing);
+		}
 
 		public static partial void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
@@ -56,7 +60,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		[MissingMapper]
-		public static partial void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static partial void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			if (handler.PlatformView?.Entry is { } entry)
+				entry.UpdateTextColor(datePicker.TextColor);
+		}
 	}
 }

@@ -18,11 +18,26 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				_time = value;
-				Text = _time.ToString();
+				UpdateText();
 			}
 		}
 
-		public string Format { get; set; }
+		string _format = string.Empty;
+
+		public string Format
+		{
+			get => _format;
+			set
+			{
+				_format = value ?? string.Empty;
+				UpdateText();
+			}
+		}
+
+		void UpdateText() =>
+			Text = string.IsNullOrEmpty(_format)
+				? _time.ToString()
+				: DateTime.Today.Add(_time).ToString(_format);
 
 	}
 }
