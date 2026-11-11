@@ -35,7 +35,7 @@ dispatcher, handler registry). Use `HandlerTestContext.Pump()` after actions
 that go through `Gtk.Application.Invoke` (for example, a button click) so the
 posted callback runs.
 
-## Covered handlers (50 tests)
+## Covered handlers (61 tests)
 
 | Handler | Tests |
 |:--|--:|
@@ -49,6 +49,7 @@ posted callback runs.
 | `ActivityIndicatorHandler` | 3 (running, stopped, update) |
 | `LayoutHandler` | 5 (add, multiple, remove, clear, insert) |
 | `NavigationView` | 6 (root, push, push replaces, pop, pop disconnects, 25 cycles) |
+| `MappingTests` | 11 (image aspect, editor placeholder/max length/alignment, entry clear button, picker title, refresh view, indicator, time format, z-index, page title) |
 
 The layout tests found a real bug: `LayoutView` removed the native widget but
 kept the entry in its `_children` list, so the next draw touched a freed
@@ -80,22 +81,41 @@ soak lives in `eng/soak/gtk-soak.sh`.
 ## Known gaps
 
 `[MissingMapper]` marks mappings that are intentionally not implemented on
-GTK. There are 75 of them; the largest groups are:
+GTK. Every remaining attribute carries a reason, and the count is part of the
+review: do not add a silent no-op.
 
-| Handler | Missing mappings |
-|:--|--:|
-| `ViewHandler` | 11 |
-| `EditorHandler` | 11 |
-| `EntryHandler` | 7 |
-| `SearchBarHandler` | 6 |
-| `ButtonHandler` | 5 (image source, font, stroke color/thickness, corner radius) |
-| `TimePickerHandler` / `RefreshViewHandler` | 4 each |
-| `RadioButtonHandler` / `ImageButtonHandler` | 4 each |
-| `SliderHandler` | 2 (track colors) |
-| `SwitchHandler` | 1 (track color) |
+Implemented in the GTK backend:
 
-`SwitchHandler` also only maps one way: changing the native switch does not
-update `IsToggled`. Write a test before implementing it.
+| Area | Mappings |
+|:--|:--|
+| Buttons | image source, font, stroke color/thickness, corner radius, padding, character spacing |
+| Editors / entries | placeholder (editor), placeholder color (editor), max length, alignment, cursor/selection, clear button |
+| Pickers | title (tooltip), text color, character spacing |
+| Time / date | format and text (including `TimeSpan` formatting), text color, character spacing |
+| Images | aspect (drawn by `ImageView`) |
+| Progress / slider / switch | progress color, track colors, thumb color |
+| RefreshView | content, spinner, refresh color, background |
+| IndicatorView | dots/squares drawn with Cairo (count, position, size, colors) |
+| Layout | z-index reordering |
+| Toolbar | title, title icon/view, bar colors, icon color, back button title, items |
+| Application | terminate, open/close window |
+
+Remaining gaps (all documented with `[MissingMapper("...")]`):
+
+| Group | Why |
+|:--|:--|
+| View transforms (`Translation`, `Scale`, `Rotation`, anchors) | GTK3 widgets have no transform support |
+| Soft keyboard, return type, text prediction, spell check | desktop/GTK concepts, no API |
+| `Entry`/`SearchBar` placeholder color, vertical alignment | GTK renders them with the theme |
+| Animated images | drawn as the first frame |
+| Editor letter spacing | Pango attributes are not applied to buffers |
+| `Picker` title color | the ComboBox has no title element |
+| `TabbedPage`, `CarouselView`/`CollectionView`, compatibility `ListView`/`TableView` | platform widgets not implemented yet |
+
+`SwitchHandler` now maps both ways: the native `state-set` signal updates
+`IsToggled` when the user toggles the switch. Programmatic changes in a headless
+test do not emit that signal, so the native → virtual path is only covered by
+code review, not by a unit test.
 
 ## Adding a handler test
 
