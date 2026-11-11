@@ -96,12 +96,25 @@ namespace Microsoft.Maui.Platform
 		{
 			ClearMeasured();
 
-			foreach (var c in Children)
+			foreach (var c in _children.ToArray())
 			{
-				Remove(c);
+				Remove(c.view, c.widget);
 			}
 
 			_children.Clear();
+		}
+
+		public void Remove(IView view, Widget widget)
+		{
+			var index = _children.FindIndex(c => c.widget == widget);
+			if (index != -1)
+				_children.RemoveAt(index);
+
+			if (widget.Parent == this)
+				Remove(widget);
+
+			ClearMeasured();
+			QueueResize();
 		}
 
 		public void Add(IView view, Widget widget)

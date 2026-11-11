@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			if (child.ToPlatform(MauiContext) is { } nativeChild)
-				PlatformView.Remove(nativeChild);
+				PlatformView.Remove(child, nativeChild);
 
 			PlatformView.QueueAllocate();
 		}

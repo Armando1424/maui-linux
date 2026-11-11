@@ -87,6 +87,11 @@ jobs:
           dotnet build Microsoft.Maui.BuildTasks.slnf
           dotnet build -c Release Microsoft.Maui.Gtk.slnf
 
+      - name: Run GTK handler tests
+        run: |
+          dotnet build src/Controls/tests/Gtk.UnitTests/Gtk.UnitTests.csproj -c Release
+          xvfb-run -a dotnet test src/Controls/tests/Gtk.UnitTests/Gtk.UnitTests.csproj -c Release --no-build
+
       - name: Run the GTK sample (20s smoke)
         run: |
           SAMPLE=$(find src/Controls/samples/Controls.Sample.Gtk/bin/Release -name 'Controls.Sample.Gtk.dll' | head -1)
