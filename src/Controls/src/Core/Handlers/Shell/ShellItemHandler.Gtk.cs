@@ -111,9 +111,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		[MissingMapper("not implemented in the GTK backend yet")]
 		public void UpdateTitle()
 		{
+			if (PlatformView is { } platformView)
+				platformView.Title = VirtualView.Title;
 		}
 
 	}

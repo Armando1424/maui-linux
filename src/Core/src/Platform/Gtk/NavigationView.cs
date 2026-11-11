@@ -31,6 +31,12 @@ namespace Microsoft.Maui.Platform
 			_virtualView = virtualView;
 		}
 
+		public void Connect(IStackNavigation navigation, IMauiContext mauiContext)
+		{
+			_virtualView = navigation;
+			_mauiContext = mauiContext;
+		}
+
 		public void Disconnect(IStackNavigationView virtualView)
 		{
 			_mauiContext = null;

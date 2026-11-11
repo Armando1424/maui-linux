@@ -137,6 +137,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override void ConnectHandler(NavigationView platformView)
 		{
+			if (MauiContext is { } context)
+				platformView.Connect(VirtualView, context);
+
 			_navigationManager?.Connect(VirtualView, platformView);
 			base.ConnectHandler(platformView);
 		}

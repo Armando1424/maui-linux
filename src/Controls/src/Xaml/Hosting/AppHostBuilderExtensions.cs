@@ -150,6 +150,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<Shell, ShellHandler>();
 			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
+			handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
 #endif
 #endif
 #if WINDOWS || ANDROID || TIZEN || GTK

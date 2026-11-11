@@ -36,4 +36,8 @@ a phase of its own, not a change inside the GTK 3 backend.
 4. CI jobs for both backends, and documentation of which controls are
    supported on each.
 
+A local clone of GirCore lives in `~/proyectos/gir.core` (commit `b286a4b`)
+with its own `CONTEXT.local.md`; it is the reference for the future GTK 4
+backend and is not part of the net10 migration.
+
 Until then, the GTK 3 backend is the supported Linux backend for this fork.

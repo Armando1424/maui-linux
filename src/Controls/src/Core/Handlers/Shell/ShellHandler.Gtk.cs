@@ -16,6 +16,19 @@ namespace Microsoft.Maui.Controls.Handlers
 			return new();
 		}
 
+		protected override void ConnectHandler(ShellView platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			platformView.MauiContext = MauiContext;
+
+			if (VirtualView is { } shell)
+			{
+				platformView.SetShell(shell);
+				platformView.UpdateCurrentItem(shell.CurrentItem);
+			}
+		}
+
 		public static void MapFlyout(ShellHandler handler, IFlyoutView flyoutView)
 		{
 			handler.PlatformView.UpdateFlyout(flyoutView.Flyout);
@@ -43,6 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapCurrentItem(ShellHandler handler, Shell view)
 		{
+			handler.PlatformView.SetShell(view);
 			handler.PlatformView.UpdateCurrentItem(view.CurrentItem);
 		}
 
