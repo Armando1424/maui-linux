@@ -1,24 +1,24 @@
 # Stability gate — .NET 10 (Phase 5)
 
 Date: 2026-11-11
-Status: **maui-linux PASS — GtkSharp PASS with one exception (coverage)**
+Status: **SIGNED — both repositories pass every criterion**
 
-## GtkSharp (`feature/net10` @ `8f49dd8be`)
+## GtkSharp (`feature/net10` @ `a01614d4a`)
 
 | Criterion | Target | Result | Status |
 |:--|:--|:--|:--|
-| Functional tests | ≥191, 0 failures | 191, 0 failures | ✅ |
+| Functional tests | ≥191, 0 failures | **244**, 0 failures | ✅ |
 | Performance tests | 13 green | 13 green (Pi) | ✅ |
-| Hand-written coverage | ≥30% | **21.4%** (5158/24128 lines) | ❌ |
-| Coverage vs baseline | ≥21.3% | 21.4% | ✅ |
+| Hand-written coverage | ≥30% | **30.31%** (7312/24128 lines) | ✅ |
+| Coverage vs baseline | ≥21.3% | 30.31% (+8.9 points) | ✅ |
 | Public API | no removals/renames | `PublicAPI/*.txt` (7 assemblies) unchanged; `netstandard2.0` target keeps the .NET 8 surface | ✅ |
 | Workload from packages | clean SDK | workload E2E job (`dotnet new gtk`, run under Xvfb) | ✅ |
 | CI | 3 consecutive green | `42884992156`, `42892361284`, `42893456682` | ✅ |
 
-Coverage by assembly: GLibSharp 31.9%, AtkSharp 48.1%, CairoSharp 28.4%,
-GtkSharp 13.2%, PangoSharp 13.3%, GdkSharp 5.8%, GioSharp 0%.
-Reaching 30% requires covering **2,080 more lines**; the planned 30% was an
-aspirational target, not a measured ceiling.
+The extra coverage comes from KeyFile, Value/Variant, DateTime/Date,
+IOChannel, Gdk.Rectangle/Pixbuf, TreeStore/ListStore, PtrArray and Builder
+tests (53 new tests). GioSharp remains at 0%: the wrapper is generated and no
+hand-written code lives there.
 
 ## maui-linux (`feature/net10` @ `f94963a9a`)
 
@@ -42,15 +42,14 @@ CI run `43107853189` also runs the performance tests and the 5 min soak as
 - Disconnected handlers: ≤10% alive after GC.
 - Baseline: `docs/baseline-net10.md`.
 
-## Decision needed
+## Sign-off
 
-The only unmet criterion is the GtkSharp hand-written coverage target (21.4%
-vs 30%). Two options:
+Both repositories pass the gate on 2026-11-11:
 
-1. **Revise the target** to the baseline (no regression, 21.4%) and sign the
-   gate; the 30% figure was estimated before knowing the size of the generated
-   marshalling surface.
-2. **Keep 30%** and postpone the merge until ~2,080 additional lines are
-   covered (model/builder/clipboard/GLib.Value tests and GioSharp coverage).
+- GtkSharp `feature/net10` @ `a01614d4a`: 244 functional tests, 13 performance
+  tests, 30.31% hand-written coverage, API baseline unchanged, workload E2E
+  green.
+- maui-linux `feature/net10` @ `392143e35`: 65 functional + 6 performance
+  tests, 30 minute soak with +0.0 MB, 3 consecutive green CI attempts.
 
-Everything else in the gate is green.
+Next phase: merge both `feature/net10` branches into `develop` (Phase 6).
