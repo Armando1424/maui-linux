@@ -35,7 +35,7 @@ dispatcher, handler registry). Use `HandlerTestContext.Pump()` after actions
 that go through `Gtk.Application.Invoke` (for example, a button click) so the
 posted callback runs.
 
-## Covered handlers (44 tests)
+## Covered handlers (50 tests)
 
 | Handler | Tests |
 |:--|--:|
@@ -48,11 +48,34 @@ posted callback runs.
 | `ProgressBarHandler` | 3 (progress, tooltip, update) |
 | `ActivityIndicatorHandler` | 3 (running, stopped, update) |
 | `LayoutHandler` | 5 (add, multiple, remove, clear, insert) |
+| `NavigationView` | 6 (root, push, push replaces, pop, pop disconnects, 25 cycles) |
 
 The layout tests found a real bug: `LayoutView` removed the native widget but
 kept the entry in its `_children` list, so the next draw touched a freed
 widget and crashed the process. `LayoutView.Remove(IView, Widget)` fixes it and
 `LayoutHandler.Remove` now uses it.
+
+## Navigation
+
+`NavigationHandlerTests` drives `NavigationView` directly instead of
+`NavigationPage.PushAsync`, so the GTK stack management is deterministic. The
+navigation page only gets a `TestElementHandler` to expose the `MauiContext`.
+
+These tests found that popped pages kept their handler (and native widget)
+alive; `NavigationView` now disconnects every page that leaves the stack.
+
+## Performance
+
+Tests tagged `Category=Performance` live in `Performance/` and run separately:
+
+```sh
+xvfb-run -a dotnet test src/Controls/tests/Gtk.UnitTests \
+  -c Release -p:_IncludeAndroid= --filter "Category=Performance"
+```
+
+They cover handler churn, label updates, measure/arrange and push/pop cycles.
+Thresholds and the Pi baseline are in `docs/performance-gtk.md`. The 30 minute
+soak lives in `eng/soak/gtk-soak.sh`.
 
 ## Known gaps
 

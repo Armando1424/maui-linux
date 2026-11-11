@@ -110,6 +110,24 @@ jobs:
             exit "$rc"
           fi
 
+      - name: GTK handler performance tests (advisory)
+        continue-on-error: true
+        run: |
+          xvfb-run -a dotnet test src/Controls/tests/Gtk.UnitTests/Gtk.UnitTests.csproj \
+            -c Release --no-build --filter "Category=Performance"
+
+      - name: GTK soak test (5 min, advisory)
+        continue-on-error: true
+        run: eng/soak/gtk-soak.sh --minutes 5 --no-build --out artifacts/soak
+
+      - name: Upload soak results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtk-soak
+          path: artifacts/soak
+          if-no-files-found: ignore
+
       - name: Pack MAUI
         run: dotnet pack Microsoft.Maui.Gtk.Packages.slnf
 
