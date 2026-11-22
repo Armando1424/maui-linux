@@ -112,4 +112,29 @@
     </ItemGroup>
   </Target>
 
+
+  <!-- PRUEBA GTK4 (temporal, no se commitea): sustituye el framework GtkSharp 3.24
+       del workload por los ensamblados GTK 4 generados en el workspace. -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-gtk'))">
+    <Gtk4Dir>/mnt/almacen/proyectos/GtkSharp-Gtk4/BuildOutput/Release/netstandard2.0/</Gtk4Dir>
+    <Gtk4NsDir>/mnt/almacen/proyectos/GtkSharp-Gtk4/BuildOutput/Release/netstandard2.0/</Gtk4NsDir>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-gtk'))">
+    <FrameworkReference Remove="GtkSharp" />
+    <PackageReference Remove="GtkSharp" />
+    <Reference Include="GtkSharp"><HintPath>$(Gtk4Dir)GtkSharp.dll</HintPath></Reference>
+    <Reference Include="GdkSharp"><HintPath>$(Gtk4Dir)GdkSharp.dll</HintPath></Reference>
+    <Reference Include="GLibSharp"><HintPath>$(Gtk4Dir)GLibSharp.dll</HintPath></Reference>
+    <Reference Include="GioSharp"><HintPath>$(Gtk4Dir)GioSharp.dll</HintPath></Reference>
+    <Reference Include="PangoSharp"><HintPath>$(Gtk4Dir)PangoSharp.dll</HintPath></Reference>
+    <Reference Include="AtkSharp"><HintPath>$(Gtk4Dir)AtkSharp.dll</HintPath></Reference>
+    <Reference Include="CairoSharp"><HintPath>$(Gtk4Dir)CairoSharp.dll</HintPath></Reference>
+    <Reference Include="GtkSourceSharp"><HintPath>$(Gtk4Dir)GtkSourceSharp.dll</HintPath></Reference>
+    <Reference Include="WebkitGtkSharp"><HintPath>$(Gtk4Dir)WebkitGtkSharp.dll</HintPath></Reference>
+    <Reference Include="JavaScriptCoreSharp"><HintPath>$(Gtk4Dir)JavaScriptCoreSharp.dll</HintPath></Reference>
+    <Reference Include="GrapheneSharp"><HintPath>$(Gtk4Dir)GrapheneSharp.dll</HintPath></Reference>
+    <Reference Include="GskSharp"><HintPath>$(Gtk4Dir)GskSharp.dll</HintPath></Reference>
+    <Reference Include="AdwaitaSharp"><HintPath>$(Gtk4Dir)AdwaitaSharp.dll</HintPath></Reference>
+  </ItemGroup>
 </Project>
