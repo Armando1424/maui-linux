@@ -45,53 +45,11 @@ namespace Microsoft.Maui
 			var widthConstrained = !double.IsPositiveInfinity(widthConstraint);
 			var heightConstrained = !double.IsPositiveInfinity(heightConstraint);
 
-			int minimumHeight = 0;
-			int naturalHeight = 0;
-			int minimumWidth = 0;
-			int naturalWidth = 0;
-#pragma warning disable CS0162 // Unreachable code detected
-
-			if (false && !widthConstrained && !heightConstrained)
-			{
-				platformView.GetSizeRequest(out var w, out var h);
-
-				return new SizeRequest(new Size(w, h));
-			}
-
-			var requestMode = platformView.RequestMode;
-			if (!(widthConstrained || heightConstrained))
-			{
-				switch (requestMode)
-				{
-					case SizeRequestMode.WidthForHeight:
-						platformView.GetPreferredHeight(out minimumHeight, out naturalHeight);
-						platformView.GetPreferredWidthForHeight(minimumHeight, out minimumWidth, out naturalWidth);
-						break;
-					case SizeRequestMode.HeightForWidth:
-						platformView.GetPreferredWidth(out minimumWidth, out naturalWidth);
-						platformView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
-						break;
-					default:
-						platformView.GetPreferredWidth(out minimumWidth, out naturalWidth);
-						platformView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
-						break;
-				}
-			}
-			else
-			{
-				minimumWidth = naturalWidth = (int)widthConstraint;
-				minimumHeight = naturalHeight = (int)heightConstraint;
-
-				if (widthConstrained)
-				{
-					platformView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
-				}
-
-				if (heightConstrained)
-				{
-					platformView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
-				}
-			}
+			// GTK4 sustituye GetPreferredWidth/Height* por Measure().
+			platformView.Measure(Orientation.Horizontal, heightConstrained ? (int)heightConstraint : -1,
+				out var minimumWidth, out var naturalWidth, out _, out _);
+			platformView.Measure(Orientation.Vertical, widthConstrained ? (int)widthConstraint : -1,
+				out var minimumHeight, out var naturalHeight, out _, out _);
 
 			if (platformView.WidthRequest > minimumWidth)
 				minimumWidth = platformView.WidthRequest;
@@ -99,10 +57,8 @@ namespace Microsoft.Maui
 			if (platformView.HeightRequest > minimumHeight)
 				minimumHeight = platformView.HeightRequest;
 
-			return new SizeRequest(new Size(naturalWidth, naturalHeight), new Size(minimumWidth, minimumHeight));
-#pragma warning restore CS0162 // Unreachable code detected
+			return new SizeRequest(new Size(minimumWidth, minimumHeight), new Size(naturalWidth, naturalHeight));
 		}
-
 		public static void Arrange(this Widget? platformView, Rect rect, bool queue = true)
 		{
 			if (platformView == null)
@@ -153,13 +109,14 @@ namespace Microsoft.Maui
 		{
 			var font = textStyle.Font;
 
-			var fontFamily = fontManager.GetFontFamily(font);
-#pragma warning disable 612
-			platformView.ModifyFont(fontFamily);
-#pragma warning restore 612
+			var fontFamily = fontManager.GetFontFamily(font)?.Family;
+			var bold = font.Weight >= FontWeight.Bold;
+			var italic = font.Slant is FontSlant.Italic or FontSlant.Oblique;
+
+			MauiCss.SetFont(platformView, fontFamily, font.Size, bold, italic);
 		}
 
-		public static void ReplaceChild(this Gtk.Container cont, Gtk.Widget oldWidget, Gtk.Widget newWidget)
+		public static void ReplaceChild(this Gtk.Widget cont, Gtk.Widget oldWidget, Gtk.Widget newWidget)
 		{
 			if (oldWidget.Parent != cont)
 				return;
@@ -172,49 +129,44 @@ namespace Microsoft.Maui
 					break;
 				case Gtk.Notebook notebook:
 					{
-						Gtk.Notebook.NotebookChild nc = (Gtk.Notebook.NotebookChild)notebook[oldWidget];
-						var detachable = nc.Detachable;
-						var pos = nc.Position;
-						var reorderable = nc.Reorderable;
-						var tabExpand = nc.TabExpand;
-						var tabFill = nc.TabFill;
+						var pos = notebook.PageNum(oldWidget);
 						var label = notebook.GetTabLabel(oldWidget);
-						notebook.Remove(oldWidget);
-						notebook.InsertPage(newWidget, label, pos);
 
-						nc = (Gtk.Notebook.NotebookChild)notebook[newWidget];
-						nc.Detachable = detachable;
-						nc.Reorderable = reorderable;
-						nc.TabExpand = tabExpand;
-						nc.TabFill = tabFill;
+						notebook.RemovePage(pos);
+						notebook.InsertPage(newWidget, label, pos);
 
 						break;
 					}
 				case Gtk.Paned paned:
 					{
-						var pc = (Gtk.Paned.PanedChild)paned[oldWidget];
-						var resize = pc.Resize;
-						var shrink = pc.Shrink;
 						var pos = paned.Position;
+						var resizeStart = paned.ResizeStartChild;
+						var shrinkStart = paned.ShrinkStartChild;
+						var resizeEnd = paned.ResizeEndChild;
+						var shrinkEnd = paned.ShrinkEndChild;
 
-						if (paned.Child1 == oldWidget)
+						if (paned.StartChild == oldWidget)
 						{
-							paned.Remove(oldWidget);
-							paned.Pack1(newWidget, resize, shrink);
+							paned.StartChild = null;
+							paned.StartChild = newWidget;
+							paned.ResizeStartChild = resizeStart;
+							paned.ShrinkStartChild = shrinkStart;
 						}
 						else
 						{
-							paned.Remove(oldWidget);
-							paned.Pack2(newWidget, resize, shrink);
+							paned.EndChild = null;
+							paned.EndChild = newWidget;
+							paned.ResizeEndChild = resizeEnd;
+							paned.ShrinkEndChild = shrinkEnd;
 						}
 
 						paned.Position = pos;
 
 						break;
 					}
-				case Gtk.Bin bin:
-					bin.Remove(oldWidget);
-					bin.Child = newWidget;
+				case Gtk.Container container:
+					container.Remove(oldWidget);
+					container.Add(newWidget);
 
 					break;
 			}

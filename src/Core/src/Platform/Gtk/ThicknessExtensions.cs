@@ -32,7 +32,8 @@ namespace Microsoft.Maui
 		public static Thickness GetPaddingThickness<TWidget>(this TWidget? it) where TWidget : Widget
 		{
 
-			return it?.StyleContext.GetPadding(StateFlags.Normal).ToThickness() ?? default;
+			// GTK4: el padding sale del CSS, no es consultable aquí.
+			return default;
 		}
 
 	}

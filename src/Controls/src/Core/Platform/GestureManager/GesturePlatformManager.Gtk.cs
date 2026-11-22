@@ -226,14 +226,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			switch (args.Event.Type)
 			{
-				case Gdk.EventType.ThreeButtonPress:
-					numClicks = 3;
-
-					break;
-				case Gdk.EventType.TwoButtonPress:
-					numClicks = 2;
-
-					break;
+				// GTK4 no distingue doble/triple clic en EventType; se usa el contador
+				// del controlador (GestureClick.NPress), que se maneja aparte.
 				case Gdk.EventType.ButtonPress:
 					numClicks = 1;
 

@@ -338,10 +338,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 			// Add(ScrollView);
 		}
 
-		protected override void OnSizeAllocated(Rectangle allocation)
+		protected override void OnSizeAllocate(int width, int height, int baseline)
 		{
-			base.OnSizeAllocated(allocation);
-			ShowAll();
+			base.OnSizeAllocate(width, height, baseline);
 		}
 
 		void OnScrollAnimationEnded(object? sender, ScrollEventArgs e)

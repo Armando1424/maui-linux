@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 		where TPlatformView : MauiMenuItem, new()
 		where TVirtualView : class, IList<TVirtualItem>, IElement
 		where TVirtualItem : IMenuElement
-		where TPlatformItem : Gtk.MenuItem
+		where TPlatformItem : MauiMenuItem
 	{
 		protected GtkMenuItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper) { }
 
@@ -43,21 +43,21 @@ namespace Microsoft.Maui.Handlers
 
 		public void Add(TVirtualItem view)
 		{
-			var platformItem = (TPlatformItem)view.ToPlatform(MauiContext!);
+			var platformItem = (TPlatformItem)view.Handler!.PlatformView!;
 			PlatformView.AppendSubItem(platformItem);
 			platformItem.Show();
 		}
 
 		public void Remove(TVirtualItem view)
 		{
-			var platformItem = (TPlatformItem)view.ToPlatform(MauiContext!);
+			var platformItem = (TPlatformItem)view.Handler!.PlatformView!;
 			PlatformView.RemoveSubItem(platformItem);
 		}
 
 
 		public void Insert(int index, TVirtualItem view)
 		{
-			var platformItem = (TPlatformItem)view.ToPlatform(MauiContext!);
+			var platformItem = (TPlatformItem)view.Handler!.PlatformView!;
 			PlatformView.InsertSubItem(platformItem, index);
 			platformItem.Show();
 		}
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public partial class MenuFlyoutSubItemHandler : GtkMenuItemHandler<IMenuFlyoutSubItem, PlatformView, IMenuElement, Gtk.MenuItem>
+	public partial class MenuFlyoutSubItemHandler : GtkMenuItemHandler<IMenuFlyoutSubItem, PlatformView, IMenuElement, MauiMenuItem>
 	{
 		public static void MapText(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{

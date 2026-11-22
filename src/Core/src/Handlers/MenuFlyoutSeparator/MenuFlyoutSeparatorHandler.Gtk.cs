@@ -1,5 +1,5 @@
 ﻿using Gtk;
-using PlatformView = Gtk.SeparatorMenuItem;
+using PlatformView = Microsoft.Maui.Platform.MauiMenuItem;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override PlatformView CreatePlatformElement()
 		{
-			return new PlatformView();
+			return new PlatformView { IsSeparator = true };
 		}
 	}
 }

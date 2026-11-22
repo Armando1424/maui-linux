@@ -10,27 +10,28 @@ namespace Microsoft.Maui
 	public class MauiGtkMainWindow : Gtk.Window
 	{
 
-		public MauiGtkMainWindow() : base(WindowType.Toplevel)
+		public MauiGtkMainWindow() : base()
 		{
-			WindowStateEvent += OnWindowStateEvent;
 			Shown += OnShown;
 			Hidden += OnHidden;
 			//GtkWidget::visibility-notify-event has been deprecated since version 3.12
 			// VisibilityNotifyEvent += OnVisibilityNotifyEvent;
-			DeleteEvent += OnDeleteEvent;
+			CloseRequest += OnCloseRequest;
 
 		}
 
-		void OnDeleteEvent(object o, DeleteEventArgs args)
+		// GTK4: "delete-event" pasó a "close-request"; ya no se puede cancelar
+		// modificando el evento, hay que devolver true/false.
+		void OnCloseRequest(object? sender, Gtk.CloseRequestArgs args)
 		{
-			MauiGtkApplication.Current.Services?.InvokeLifecycleEvents<GtkLifecycle.OnDelete>(del => del(this, args));
+			MauiGtkApplication.Current.Services?.InvokeLifecycleEvents<GtkLifecycle.OnDelete>(
+				del => del(this, System.EventArgs.Empty));
 
-			if (MauiGtkApplication.Current.MainWindow == o)
+			// GTK4 permite bloquear el cierre devolviendo true, pero este binding
+			// expone close-request como void: aquí solo se notifica el cierre.
+			if (MauiGtkApplication.Current.MainWindow == sender)
 			{
-
 				((Application)MauiGtkApplication.CurrentGtkApplication).Quit();
-
-				args.Event.SendEvent = true;
 			}
 		}
 

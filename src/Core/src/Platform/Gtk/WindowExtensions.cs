@@ -57,7 +57,9 @@ namespace Microsoft.Maui.Platform
 			var x = (int)window.X;
 			var y = (int)window.Y;
 
-			platformWindow.Move(x, y);
+			// GTK4: la posición la decide el compositor; no hay Move().
+			_ = x;
+			_ = y;
 		}
 
 		public static void UpdateWidth(this Gtk.Window platformWindow, IWindow window) =>
@@ -74,7 +76,14 @@ namespace Microsoft.Maui.Platform
 			if (width <= 0 || height <= 0)
 				return;
 
-			platformWindow.Resize(width, height);
+			// GTK4 no tiene Resize(). SetDefaultSize solo aplica antes de que la
+			// ventana se mapee; después, el compositor manda y lo más cercano es
+			// fijar el tamaño mínimo con SetSizeRequest.
+			if (platformWindow.Width > 0 || platformWindow.Height > 0)
+				platformWindow.SetSizeRequest(width, height);
+			else
+				platformWindow.SetDefaultSize(width, height);
+
 			platformWindow.QueueResize();
 		}
 

@@ -5,9 +5,12 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Platform
 {
 
-	public class ContentView : Bin, ICrossPlatformLayoutBacking
+	public class ContentView : Container, ICrossPlatformLayoutBacking
 	{
 		public ContentView() : base() { }
+
+		// Era un Gtk.Bin: el hijo ocupa todo el espacio disponible.
+		protected override bool ChildrenFillAllocation => true;
 
 		public ICrossPlatformLayout? CrossPlatformLayout { get; set; }
 
@@ -26,7 +29,8 @@ namespace Microsoft.Maui.Platform
 				{
 					//PackStart(value, true, false, 0);
 					Child = value;
-					Child.Expand = true;
+					Child.Hexpand = true;
+				Child.Vexpand = true;
 				}
 
 				_content = value;

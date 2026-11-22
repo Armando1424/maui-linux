@@ -19,12 +19,13 @@ public class BorderView : Frame, ICrossPlatformLayoutBacking
 		{
 			if (_content != null && value != null)
 			{
-				this.ReplaceChild(_content, value);
+				Child = value;
 			}
 			else if (value != null)
 			{
 				Child = value;
-				Child.Expand = true;
+				Child.Hexpand = true;
+				Child.Vexpand = true;
 			}
 
 			_content = value;

@@ -112,13 +112,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 		{
 			CanFocus = true;
 
-			this.AddEvents((int)Gdk.EventMask.ButtonPressMask);
-			this.AddEvents((int)Gdk.EventMask.FocusChangeMask);
-			TouchEvent += OnTouchEvent;
-			KeyPressEvent += OnKeyEvent;
-			FocusGrabbed += OnFocused;
-			FocusOutEvent += OnUnfocused;
-			ButtonPressEvent += OnButtonPressEvent;
 			// no need for that:
 			//SizeAllocated += OnLayout;
 		}
@@ -161,30 +154,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 			OnFocused(this, e);
 		}
 
-		void OnKeyEvent(object source, KeyPressEventArgs e)
-		{
-			if (e.Event.SendEvent)
-			{
-				RequestSelected?.Invoke(this, EventArgs.Empty);
-				//return true;
-			}
-
-			// return false;
-		}
-
-		void OnTouchEvent(object source, Gtk.TouchEventArgs e)
-		{
-			// if (e.Touch.GetState(0) == PointStateType.Down)
-			// {
-			//     return true;
-			// }
-			// else if (e.Touch.GetState(0) == PointStateType.Up && this.IsInside(e.Touch.GetLocalPosition(0)))
-			// {
-			//     RequestSelected?.Invoke(this, EventArgs.Empty);
-			//     return true;
-			// }
-			// return false;
-		}
 
 		protected virtual void UpdateState()
 		{

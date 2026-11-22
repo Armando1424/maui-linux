@@ -137,30 +137,37 @@ namespace Microsoft.Maui.Platform
 			var x = (allocation.Width - imgSize.Width) / 2;
 			var y = (allocation.Height - imgSize.Height) / 2;
 
-			if (false)
-#pragma warning disable CS0162 // Unreachable code detected
-			{
-				using var region = Window.VisibleRegion;
-				using var frame = Window.BeginDrawFrame(region);
-				using var crr = frame.CairoContext;
-				crr.DrawPixbuf(image, x, y, allocation.Width, allocation.Height);
-				Window.EndDrawFrame(frame);
-			}
-#pragma warning restore CS0162 // Unreachable code detected
-			else
-			{
-				cr.DrawPixbuf(image, x, y, imgSize.Width, imgSize.Height);
-			}
+			cr.DrawPixbuf(image, x, y, imgSize.Width, imgSize.Height);
 
 			return false;
 		}
 
-		protected override void OnAdjustSizeRequest(Orientation orientation, out int minimum_size, out int natural_size)
+		protected override void OnMeasure(Orientation orientation, int forSize,
+			out int minimum, out int natural, out int minimumBaseline, out int naturalBaseline)
 		{
-			base.OnAdjustSizeRequest(orientation, out minimum_size, out natural_size);
+			minimumBaseline = -1;
+			naturalBaseline = -1;
 
-			if (Image is not { })
+			if (Image is { })
+			{
+				var imgSize = new Size(Image.Width, Image.Height);
+
+				if (orientation == Orientation.Horizontal)
+				{
+					var size = Measure(Aspect, imgSize, forSize < 0 ? 0 : forSize, default);
+					minimum = (int)size.Width;
+					natural = Math.Max(Image.Width, minimum);
+				}
+				else
+				{
+					var size = Measure(Aspect, imgSize, default, forSize < 0 ? 0 : forSize);
+					minimum = (int)size.Height;
+					natural = Math.Max(Image.Height, minimum);
+				}
 				return;
+			}
+
+			base.OnMeasure(orientation, forSize, out minimum, out natural, out minimumBaseline, out naturalBaseline);
 		}
 
 		protected override void OnRealized()
@@ -168,41 +175,12 @@ namespace Microsoft.Maui.Platform
 			base.OnRealized();
 		}
 
-		protected override SizeRequestMode OnGetRequestMode()
-		{
-			return SizeRequestMode.HeightForWidth;
-		}
 
 		protected override void OnSizeAllocated(Rectangle allocation)
 		{
 			base.OnSizeAllocated(allocation);
 		}
 
-		protected override void OnGetPreferredHeightForWidth(int width, out int minimum_height, out int natural_height)
-		{
-			base.OnGetPreferredHeightForWidth(width, out minimum_height, out natural_height);
 
-			if (Image is { })
-			{
-				var imgSize = new Size(Image.Width, Image.Height);
-				var size = Measure(Aspect, imgSize, width, default);
-
-				minimum_height = (int)size.Height;
-				natural_height = Math.Max(Image.Height, minimum_height);
-			}
-		}
-
-		protected override void OnGetPreferredWidthForHeight(int height, out int minimum_width, out int natural_width)
-		{
-			base.OnGetPreferredWidthForHeight(height, out minimum_width, out natural_width);
-
-			if (Image is { })
-			{
-				var imgSize = new Size(Image.Width, Image.Height);
-				var size = Measure(Aspect, imgSize, default, height);
-				minimum_width = (int)size.Width;
-				natural_width = Math.Max(Image.Width, minimum_width);
-			}
-		}
 	}
 }

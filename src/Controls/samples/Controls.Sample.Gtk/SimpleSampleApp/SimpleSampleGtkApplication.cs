@@ -25,8 +25,8 @@ namespace Maui.SimpleSampleApp
 		{
 			var b = new Box(Orientation.Vertical, 0)
 			{
-				Expand = true,
-				Margin = 5,
+				Hexpand = true,
+				Vexpand = true,
 
 			};
 

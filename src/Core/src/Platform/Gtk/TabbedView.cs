@@ -34,8 +34,9 @@ namespace Microsoft.Maui.Platform
 
 		public void SetPages(IReadOnlyList<(IView View, Widget Widget, string? Title)> pages, IView? current)
 		{
-			foreach (var child in Children)
-				Remove(child);
+			// GTK4: se quitan páginas, no hijos.
+			while (NPages > 0)
+				RemovePage(0);
 
 			_views.Clear();
 

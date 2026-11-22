@@ -113,7 +113,6 @@ namespace Microsoft.Maui.Handlers
 			if (widget == null)
 				return;
 
-			widget.Events |= Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.ScrollMask | EventMask.SmoothScrollMask;
 			widget.ButtonPressEvent += OnNativeViewButtonPressEvent;
 			widget.ButtonReleaseEvent += OnNativeViewButtonReleaseEvent;
 			widget.ScrollEvent += OnNativeViewScrollEvent;

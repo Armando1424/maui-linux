@@ -135,7 +135,9 @@ public static class ImageExtensions
 		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, (int)(pixbuf.Width * scaleFactor), (int)(pixbuf.Height * scaleFactor));
 		using var context = new Cairo.Context(surface);
 		context.Scale(surface.Width / (double)pixbuf.Width, surface.Height / (double)pixbuf.Height);
+#pragma warning disable CS0612 // GTK4: API obsoleta pero funcional
 		Gdk.CairoHelper.SetSourcePixbuf(context, pixbuf, 0, 0);
+#pragma warning restore CS0612
 		context.Paint();
 		surface.Flush();
 
@@ -154,7 +156,9 @@ public static class ImageExtensions
 		context.Translate(x, y);
 
 		context.Scale(width / pixbuf.Width, height / pixbuf.Height);
+#pragma warning disable CS0612 // GTK4: API obsoleta pero funcional
 		Gdk.CairoHelper.SetSourcePixbuf(context, pixbuf, 0, 0);
+#pragma warning restore CS0612
 
 		using (var p = context.GetSource())
 		{

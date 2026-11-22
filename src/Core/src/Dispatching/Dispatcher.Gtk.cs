@@ -52,18 +52,11 @@ namespace Microsoft.Maui.Dispatching
 			// causing the loop to never end.
 
 			int n = 1000;
-#pragma warning disable 612
-			Gdk.Threads.Enter();
-#pragma warning restore 612
-
 			while (Gtk.Application.EventsPending() && --n > 0)
 			{
 				Gtk.Application.RunIteration(false);
 			}
 
-#pragma warning disable 612
-			Gdk.Threads.Leave();
-#pragma warning restore 612
 		}
 
 		public static void Invoke(System.Action action)

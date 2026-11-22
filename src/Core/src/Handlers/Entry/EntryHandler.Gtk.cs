@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.Changed += OnNativeViewChanged;
 			nativeView.MotionNotifyEvent += OnNativeViewMotionNotified;
-			nativeView.MoveCursor += OnNativeViewCursorMoved;
 			nativeView.ButtonPressEvent += OnNativeViewOnButtonPressed;
 			nativeView.ButtonReleaseEvent += OnNativeViewOnButtonReleased;
 		}
@@ -28,7 +27,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.Changed -= OnNativeViewChanged;
 			nativeView.MotionNotifyEvent -= OnNativeViewMotionNotified;
-			nativeView.MoveCursor -= OnNativeViewCursorMoved;
 			nativeView.ButtonPressEvent -= OnNativeViewOnButtonPressed;
 			nativeView.ButtonReleaseEvent -= OnNativeViewOnButtonReleased;
 		}

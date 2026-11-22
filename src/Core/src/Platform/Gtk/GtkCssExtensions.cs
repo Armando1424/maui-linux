@@ -21,8 +21,8 @@ namespace Microsoft.Maui
 				case Gtk.ComboBox box:
 
 				default:
-					var pathSegments = nativeView.StyleContext.Path.ToString().Split(' ');
-					mainNode = pathSegments[pathSegments.Length - 1].Split(':')[0];
+					// GTK4: no hay StyleContext.Path; se usa el nombre del tipo como nodo.
+					mainNode = nativeView.GetType().Name.ToLowerInvariant();
 
 					break;
 			}
@@ -42,32 +42,11 @@ namespace Microsoft.Maui
 			return $"url('data:image/png;base64,{Convert.ToBase64String(puf)}')";
 		}
 
-		[MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
-		public static void Realize(Gtk.CssProvider p)
-		{
-			var l = p.ToString().Length;
-
-			if (l != 0)
-			{
-				// ReSharper disable once EmptyStatement
-				;
-			}
-		}
 
 		public static void SetStyleValueNode(this Gtk.Widget widget, string value, string mainNode, string attr, string? subNode = null)
 		{
-			if (string.IsNullOrEmpty(value))
-				return;
-
-			using var p = new Gtk.CssProvider();
-
-			subNode = subNode != null ? $" > {subNode} " : subNode;
-
-			p.LoadFromData($"{mainNode}{subNode}{{{attr}:{value}}}");
-			widget.StyleContext.AddProvider(p, Gtk.StyleProviderPriority.User);
-
-			if (value.StartsWith("url"))
-				Realize(p);
+			// GTK4: sin proveedores por widget; se usa la hoja global de MauiCss.
+			MauiCss.Set(widget, attr, value);
 		}
 
 		public static void SetStyleValue(this Gtk.Widget widget, string value, string attr, string? subNode = null)

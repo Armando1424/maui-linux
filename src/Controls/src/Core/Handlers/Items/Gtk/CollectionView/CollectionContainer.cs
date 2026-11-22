@@ -14,7 +14,6 @@ public partial class CollectionContainer : Container
 {
 	public CollectionContainer()
 	{
-		HasWindow = false;
 	}
 
 	public ItemAdaptor? Adaptor
@@ -29,17 +28,10 @@ public partial class CollectionContainer : Container
 		set;
 	}
 
-	protected override bool OnDrawn(Cairo.Context cr)
+	protected override void OnSnapshot(Gtk.Snapshot snapshot)
 	{
-		var stc = this.StyleContext;
-		stc.RenderBackground(cr, 0, 0, Allocation.Width, Allocation.Height);
-
-		var r = true;
-		foreach (var c in _children.ToArray())
-			PropagateDraw(c, cr);
-		foreach (var c in _items.ToArray())
-			PropagateDraw(c, cr);
-		return r;
+		// GTK4 dibuja los hijos; aquí solo el fondo.
+		base.OnSnapshot(snapshot);
 	}
 
 	public bool IsReallocating { get; set; }
@@ -75,21 +67,6 @@ public partial class CollectionContainer : Container
 	List<Widget> _children = new();
 	List<Widget> _items = new();
 
-	protected override void ForAll(bool include_internals, Callback callback)
-	{
-		base.ForAll(include_internals, callback);
-
-		foreach (var w in _children)
-		{
-			callback(w);
-		}
-
-		foreach (var w in _items)
-		{
-			callback(w);
-		}
-	}
-
 	public void AddItem(Widget widget)
 	{
 		_items.Add(widget);
@@ -102,28 +79,27 @@ public partial class CollectionContainer : Container
 		_items.Remove(widget);
 	}
 
-	public new void Add(Widget widget)
+	public override void Add(Widget widget)
 	{
-		_children.Add(widget);
-		base.Add(widget);
-	}
+		if (!_children.Contains(widget))
+			_children.Add(widget);
 
-	protected override void OnAdded(Widget widget)
-	{
-		widget.Parent = this;
+		base.Add(widget);
 		ClearMeasured();
 	}
 
-	protected override void OnRemoved(Widget widget)
+	public override void Remove(Widget widget)
 	{
-		widget.Unparent();
+		base.Remove(widget);
 		_children.Remove(widget);
 		ClearMeasured();
 		QueueResize();
 	}
 
-	protected override void OnSizeAllocated(Gdk.Rectangle allocation)
+	protected override void OnSizeAllocate(int width, int height, int baseline)
 	{
+		var allocation = new Gdk.Rectangle(0, 0, width, height);
+
 		if (IsSizeAllocating)
 			return;
 
@@ -344,70 +320,37 @@ public partial class CollectionContainer : Container
 
 	double? RequestedWidth { get; set; }
 
-	protected override void OnGetPreferredHeight(out int minimum_height, out int natural_height)
+	protected override void OnMeasure(Orientation orientation, int forSize,
+		out int minimum, out int natural, out int minimumBaseline, out int naturalBaseline)
 	{
-		base.OnGetPreferredHeight(out minimum_height, out natural_height);
+		minimumBaseline = -1;
+		naturalBaseline = -1;
 
-		var force_width = RequestedWidth ?? double.PositiveInfinity;
+		var width = double.PositiveInfinity;
+		var height = double.PositiveInfinity;
 
-		if (IsReallocating && CurrentAllocation.HasValue)
-			force_width = CurrentAllocation.Value.Width;
+		if (forSize >= 0)
+		{
+			if (orientation == Orientation.Horizontal)
+				height = forSize;
+			else
+				width = forSize;
+		}
 
-		var size = Measure(force_width, minimum_height > 0 ? minimum_height : RequestedHeight ?? double.PositiveInfinity);
+		var size = Measure(width, height);
 
-		if (size.Height < HeightRequest)
-			minimum_height = natural_height = HeightRequest;
+		if (orientation == Orientation.Horizontal)
+		{
+			var w = size.Width < WidthRequest ? WidthRequest : size.Width;
+			minimum = natural = (int)System.Math.Ceiling(w);
+		}
 		else
-			minimum_height = natural_height = (int)size.Height;
+		{
+			var h = size.Height < HeightRequest ? HeightRequest : size.Height;
+			minimum = natural = (int)System.Math.Ceiling(h);
+		}
 	}
 
-	protected override void OnGetPreferredWidth(out int minimum_width, out int natural_width)
-	{
-		base.OnGetPreferredWidth(out minimum_width, out natural_width);
-
-		var force_height = RequestedHeight ?? double.PositiveInfinity;
-
-		if (IsReallocating && CurrentAllocation.HasValue)
-			force_height = CurrentAllocation.Value.Height;
-
-		var size = Measure(minimum_width > 0 ? minimum_width : RequestedWidth ?? double.PositiveInfinity, force_height);
-
-		if (size.Width < WidthRequest)
-			minimum_width = natural_width = WidthRequest;
-		else
-			minimum_width = natural_width = (int)size.Width;
-	}
-
-	protected override void OnGetPreferredHeightForWidth(int width, out int minimum_height, out int natural_height)
-	{
-		RequestedWidth = width;
-
-		base.OnGetPreferredHeightForWidth(width, out minimum_height, out natural_height);
-
-		var size = Measure(width, minimum_height > 0 ? minimum_height : RequestedHeight ?? double.PositiveInfinity);
-
-		if (size.Height < HeightRequest)
-			minimum_height = natural_height = HeightRequest;
-		else
-			minimum_height = natural_height = (int)size.Height;
-
-		RequestedWidth = null;
-	}
-
-	protected override void OnGetPreferredWidthForHeight(int height, out int minimum_width, out int natural_width)
-	{
-		RequestedHeight = height;
-
-		base.OnGetPreferredWidthForHeight(height, out minimum_width, out natural_width);
-		var size = Measure(minimum_width > 0 ? minimum_width : RequestedWidth ?? double.PositiveInfinity, height);
-
-		if (size.Width < WidthRequest)
-			minimum_width = natural_width = WidthRequest;
-		else
-			minimum_width = natural_width = (int)size.Width;
-
-		RequestedHeight = null;
-	}
 
 #endif
 

@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk;
 public static class FontExtensions
 {
 	static Pango.Context? _systemContext;
-	static Pango.Context SystemContext => _systemContext ??= Gdk.PangoHelper.ContextGet();
+	static Pango.Context SystemContext => _systemContext ??= new Pango.Context();
 
 	static Pango.FontDescription? _systemFontDescription;
 	static Pango.FontDescription SystemFontDescription => _systemFontDescription ??= SystemContext.FontDescription;

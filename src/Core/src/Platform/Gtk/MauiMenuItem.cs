@@ -1,41 +1,65 @@
-using System.Linq;
-using Gtk;
+using System.Threading;
 
 namespace Microsoft.Maui.Platform;
 
-// https://docs.gtk.org/gtk3/class.MenuItem.html
-
-public class MauiMenuItem : MenuItem
+/// <summary>
+/// Item de menú de GTK4. No es un widget: envuelve un GLib.MenuItem y, cuando
+/// se pulsa, dispara <see cref="Activated"/> a través de un GLib.SimpleAction
+/// registrado en la aplicación por defecto.
+/// </summary>
+public class MauiMenuItem
 {
-	Menu EnsureSubMenu => (Menu)(Submenu ??= new Menu());
+	static int _sequence;
 
-	public void AppendSubItem(MenuItem subItem)
+	string _text = string.Empty;
+	bool _enabled = true;
+	MauiMenu? _submenu;
+
+	public event System.EventHandler? Activated;
+
+	public bool IsSeparator { get; init; }
+
+	public MauiMenu? Submenu => _submenu;
+
+	public MauiMenu EnsureSubMenu => _submenu ??= new MauiMenu();
+
+	public void AppendSubItem(MauiMenuItem subItem) => EnsureSubMenu.Append(subItem);
+
+	public void RemoveSubItem(MauiMenuItem subItem) => _submenu?.Remove(subItem);
+
+	public void InsertSubItem(MauiMenuItem subItem, int index) => EnsureSubMenu.Insert(subItem, index);
+
+	public void ClearSubItems() => _submenu?.Clear();
+
+	public void UpdateText(string text)
 	{
-		EnsureSubMenu.Append(subItem);
+		_text = text ?? string.Empty;
+		_submenu?.Invalidate();
 	}
 
-	public void RemoveSubItem(MenuItem subItem)
+	public void UpdateIsEnabled(bool enabled) => _enabled = enabled;
+
+	// GTK4 no oculta/muestra items de un GMenu: se reconstruye el modelo.
+	public void Show()
 	{
-		if (Submenu is not { })
-			return;
-		EnsureSubMenu.Remove(subItem);
 	}
 
-	public void InsertSubItem(MenuItem subItem, int index)
+	internal GLib.MenuItem ToMenuItem()
 	{
-		EnsureSubMenu.Insert(subItem, index);
+		if (IsSeparator)
+			return new GLib.MenuItem("─────", (string?)null);
+
+		if (_submenu is not null)
+			return GLib.MenuItem.NewSubmenu(_text, _submenu.Model);
+
+		var actionName = "maui" + Interlocked.Increment(ref _sequence);
+		var action = new GLib.SimpleAction(actionName, null);
+
+		if (_enabled)
+			action.Activated += (_, _) => Activated?.Invoke(this, System.EventArgs.Empty);
+
+		GLib.Application.Default?.AddAction(action);
+
+		return new GLib.MenuItem(_text, "app." + actionName);
 	}
-
-	public void ClearSubItems()
-	{
-		if (Submenu is not { })
-			return;
-
-		foreach (var m in EnsureSubMenu.Children.ToArray())
-		{
-			EnsureSubMenu.Remove(m);
-		}
-	}
-
-
 }

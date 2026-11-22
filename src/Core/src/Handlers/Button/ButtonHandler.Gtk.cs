@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler?.PlatformView is not Button button)
 					return;
 
-				button.Image = new Image(platformImage);
+				button.Child = new Gtk.Image(platformImage);
 			}
 		}
 	}

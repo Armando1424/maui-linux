@@ -19,25 +19,10 @@ namespace Microsoft.Maui.Platform
 
 	public class LayoutView : Container, IGtkContainer, ICrossPlatformLayoutBacking
 	{
-		protected override bool OnDrawn(Cairo.Context cr)
+		protected override void OnSnapshot(Gtk.Snapshot snapshot)
 		{
-			var stc = this.StyleContext;
-			stc.RenderBackground(cr, 0, 0, Allocation.Width, Allocation.Height);
-
-			var r = true;
-			foreach (var c in _children.ToArray())
-				PropagateDraw(c.widget, cr);
-#if TRACE_ALLOCATION
-			cr.Save();
-			cr.SetSourceColor(Graphics.Colors.Red.ToCairoColor());
-			cr.Rectangle(0, 0, Allocation.Width, Allocation.Height);
-			cr.Stroke();
-
-			cr.MoveTo(0, Allocation.Height - 12);
-			cr.ShowText($"{_measureCount} | {Allocation.Size}");
-			cr.Restore();
-#endif
-			return r;
+			// GTK4: los hijos los dibuja GTK; aquí solo el fondo del layout.
+			base.OnSnapshot(snapshot);
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout { get; set; }
@@ -46,7 +31,6 @@ namespace Microsoft.Maui.Platform
 
 		public LayoutView()
 		{
-			HasWindow = false;
 		}
 
 		public void ReplaceChild(Widget oldWidget, Widget newWidget)
@@ -65,31 +49,6 @@ namespace Microsoft.Maui.Platform
 			{
 				_children[index] = (view, newWidget);
 			}
-		}
-
-		// this is maybe not needed:
-		void UpdateFocusChain()
-		{
-			Orientation GetOrientation() =>
-				// TODO: find out what orientation it has, or find another sort kriteria, eg. tabstop
-				Orientation.Vertical;
-
-			var orientation = GetOrientation();
-
-			var focusChain = _children
-				.Select(c => c.widget)
-				// .OrderBy(kvp => orientation == Orientation.Horizontal ? kvp.Value.Rect.X : kvp.Value.Rect.Y)
-				.ToArray();
-
-			FocusChain = focusChain;
-		}
-
-		protected override void ForAll(bool includeInternals, Callback callback)
-		{
-			base.ForAll(includeInternals, callback);
-
-			foreach (var c in _children.ToArray())
-				callback(c.widget);
 		}
 
 		public void ClearChildren()
@@ -166,15 +125,17 @@ namespace Microsoft.Maui.Platform
 			Add(widget);
 		}
 
-		protected override void OnAdded(Widget widget)
+		// GTK4 no tiene OnAdded/OnRemoved: el alta y la baja pasan por Add/Remove
+		// del Container de compatibilidad.
+		public override void Add(Widget widget)
 		{
-			widget.Parent = this;
+			base.Add(widget);
 			ClearMeasured();
 		}
 
-		protected override void OnRemoved(Widget widget)
+		public override void Remove(Widget widget)
 		{
-			widget.Unparent();
+			base.Remove(widget);
 			ClearMeasured();
 			QueueResize();
 		}
@@ -193,7 +154,7 @@ namespace Microsoft.Maui.Platform
 				var cAlloc = new Gdk.Rectangle((int)(allocation.X + r.X), (int)(allocation.Y + r.Y), (int)r.Width, (int)r.Height);
 
 				// if (cAlloc != w.Allocation) // it's allways needed to implicit arrange children:
-				w.SizeAllocate(cAlloc);
+					w.SizeAllocate(cAlloc);
 			}
 		}
 
@@ -222,6 +183,10 @@ namespace Microsoft.Maui.Platform
 		protected Rectangle LastAllocation { get; set; }
 
 		protected Rectangle? CurrentAllocation { get; set; }
+
+				double? RequestedWidth { get; set; }
+
+		double? RequestedHeight { get; set; }
 
 		protected void ClearMeasured(bool clearCache = true)
 		{
@@ -279,7 +244,10 @@ namespace Microsoft.Maui.Platform
 					// Arrange(mAllocation);
 				}
 
-				base.OnSizeAllocated(allocation);
+				// No se llama a base.OnSizeAllocated porque el Container de compat
+				// re-colocaría los hijos en (0,0) con su tamaño natural, pisando el
+				// arrange de MAUI. Solo se propaga el evento de tamaño.
+				RaiseSizeAllocated(allocation);
 				LastAllocation = mAllocation;
 			}
 			finally
@@ -340,85 +308,38 @@ namespace Microsoft.Maui.Platform
 		}
 
 #if !USE_ADJUSTSIZEREQUEST
-
-		// protected override SizeRequestMode OnGetRequestMode()
-		// {
-		// 	// dirty fix: unwrapped labels report fixed sizes, forcing parents to fixed mode
-		// 	//            -> report always width_for_height, since we don't support angles
-		// 	return Gtk.SizeRequestMode.WidthForHeight;
-		// }
-
-		double? RequestedHeight { get; set; }
-
-		double? RequestedWidth { get; set; }
-
-		protected override void OnGetPreferredHeight(out int minimum_height, out int natural_height)
+		// GTK4 sustituye los cuatro virtuales de GTK3 (preferred width/height y
+		// width/height-for-*) por uno solo: OnMeasure(orientación, forSize).
+		protected override void OnMeasure(Orientation orientation, int forSize,
+			out int minimum, out int natural, out int minimumBaseline, out int naturalBaseline)
 		{
-			base.OnGetPreferredHeight(out minimum_height, out natural_height);
-			// containers need initial width in height_for_width mode
-			// dirty fix: do not constrain width on first allocation 
-			var force_width = RequestedWidth ?? double.PositiveInfinity;
+			minimumBaseline = -1;
+			naturalBaseline = -1;
 
-			if (IsReallocating && CurrentAllocation.HasValue)
-				force_width = CurrentAllocation.Value.Width;
+			var width = double.PositiveInfinity;
+			var height = double.PositiveInfinity;
 
-			var size = Measure(force_width, minimum_height > 0 ? minimum_height : RequestedHeight ?? double.PositiveInfinity);
+			if (forSize >= 0)
+			{
+				if (orientation == Orientation.Horizontal)
+					height = forSize;
+				else
+					width = forSize;
+			}
 
-			if (size.Height < HeightRequest)
-				minimum_height = natural_height = HeightRequest;
+			var size = Measure(width, height);
+
+			if (orientation == Orientation.Horizontal)
+			{
+				var w = size.Width < WidthRequest ? WidthRequest : size.Width;
+				minimum = natural = (int)System.Math.Ceiling(w);
+			}
 			else
-				minimum_height = natural_height = (int)size.Height;
+			{
+				var h = size.Height < HeightRequest ? HeightRequest : size.Height;
+				minimum = natural = (int)System.Math.Ceiling(h);
+			}
 		}
-
-		protected override void OnGetPreferredWidth(out int minimum_width, out int natural_width)
-		{
-			base.OnGetPreferredWidth(out minimum_width, out natural_width);
-			// containers need initial height in width_for_height mode
-			// dirty fix: do not constrain height on first allocation
-			var force_height = RequestedHeight ?? double.PositiveInfinity;
-
-			if (IsReallocating && CurrentAllocation.HasValue)
-				force_height = CurrentAllocation.Value.Height;
-
-			var size = Measure(minimum_width > 0 ? minimum_width : RequestedWidth ?? double.PositiveInfinity, force_height);
-
-			if (size.Width < WidthRequest)
-				minimum_width = natural_width = WidthRequest;
-			else
-				minimum_width = natural_width = (int)size.Width;
-		}
-
-		protected override void OnGetPreferredHeightForWidth(int width, out int minimum_height, out int natural_height)
-		{
-			RequestedWidth = width;
-
-			base.OnGetPreferredHeightForWidth(width, out minimum_height, out natural_height);
-
-			var size = Measure(width, minimum_height > 0 ? minimum_height : RequestedHeight ?? double.PositiveInfinity);
-
-			if (size.Height < HeightRequest)
-				minimum_height = natural_height = HeightRequest;
-			else
-				minimum_height = natural_height = (int)size.Height;
-
-			RequestedWidth = null;
-		}
-
-		protected override void OnGetPreferredWidthForHeight(int height, out int minimum_width, out int natural_width)
-		{
-			RequestedHeight = height;
-
-			base.OnGetPreferredWidthForHeight(height, out minimum_width, out natural_width);
-			var size = Measure(minimum_width > 0 ? minimum_width : RequestedWidth ?? double.PositiveInfinity, height);
-
-			if (size.Width < WidthRequest)
-				minimum_width = natural_width = WidthRequest;
-			else
-				minimum_width = natural_width = (int)size.Width;
-
-			RequestedHeight = null;
-		}
-
 #endif
 
 #if USE_ADJUSTSIZEREQUEST

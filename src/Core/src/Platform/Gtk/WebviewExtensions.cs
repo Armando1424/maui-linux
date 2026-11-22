@@ -103,7 +103,7 @@ public static partial class WebviewExtensions
 	{
 		try
 		{
-			webView.RunJavascript(request.Script, null, (sender, res) =>
+			webView.EvaluateJavascript(request.Script, null, null, null, (sender, res, data) =>
 			{
 				if (sender is not WebView view)
 				{
@@ -114,9 +114,10 @@ public static partial class WebviewExtensions
 
 				try
 				{
-					var javascriptResult = view.RunJavascriptFinish(res);
+					// GTK4: EvaluateJavascriptFinish ya devuelve el valor.
+					var jsValue = view.EvaluateJavascriptFinish(res);
 
-					if (javascriptResult.JsValue is not { } jsValue)
+					if (jsValue is null)
 						return;
 
 					if (jsValue.IsString)

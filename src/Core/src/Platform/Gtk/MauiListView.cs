@@ -26,15 +26,19 @@ namespace Microsoft.Maui.Platform
 
 		public event EventHandler<int>? SelectedIndexChanged;
 
-		public IReadOnlyList<Widget> Rows => _list.Children;
+		readonly System.Collections.Generic.List<Widget> _rows = new();
+
+		public IReadOnlyList<Widget> Rows => _rows;
 
 		public void SetRows(IEnumerable<Widget> rows, int selectedIndex)
 		{
-			foreach (var child in _list.Children)
+			foreach (var child in _rows)
 				_list.Remove(child);
 
+			_rows.Clear();
+
 			foreach (var row in rows)
-				_list.Add(row);
+				_list.Append(row);
 
 			ShowAll();
 			Select(selectedIndex);

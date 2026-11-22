@@ -37,11 +37,11 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		public delegate void OnHidden(Gtk.Window window, EventArgs args);
 
-		public delegate void OnVisibilityChanged(Gtk.Window window, Gtk.VisibilityNotifyEventArgs args);
+		public delegate void OnVisibilityChanged(Gtk.Window window, System.EventArgs args);
 
 		public delegate void OnStateChanged(Gtk.Window window, Gtk.WindowStateEventArgs args);
 
-		public delegate void OnDelete(Gtk.Window window, Gtk.DeleteEventArgs args);
+		public delegate void OnDelete(Gtk.Window window, System.EventArgs args);
 
 		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);
 

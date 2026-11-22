@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Platform
 		public MauiToolbar() : base(Orientation.Horizontal, 0)
 		{
 			BackButton = new Button();
-			BackButton.Image = new Image(Stock.GoBack, IconSize.Button);
+			BackButton.IconName = "go-previous-symbolic";
 			// Remove button border
 			BackButton.Relief = ReliefStyle.None;
 

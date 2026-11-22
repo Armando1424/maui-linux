@@ -30,10 +30,10 @@ namespace Microsoft.Maui.Platform
 
 		public bool IsRefreshing
 		{
-			get => _spinner.Active;
+			get => _spinner.Spinning;
 			set
 			{
-				_spinner.Active = value;
+				_spinner.Spinning = value;
 				_spinner.Visible = value;
 				_header.Visible = value;
 			}

@@ -1,86 +1,62 @@
-using Gdk;
-using Gtk;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform;
 
+/// <summary>
+/// GTK4 eliminó los virtuales de eventos (OnButtonPressEvent, OnMotionNotifyEvent…):
+/// ahora se usan controladores. La lógica de interacción es la misma; solo cambia
+/// de dónde vienen las coordenadas.
+/// </summary>
 public class PlatformTouchGraphicsView : Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView
 {
 	IGraphicsView? _graphicsView;
 	bool _isTouching;
 	bool _isInBounds;
 
-	PointF[] GetViewPoints(EventButton e)
+	public PlatformTouchGraphicsView()
 	{
-		return new[] { new PointF((float)e.X, (float)e.Y) };
-	}
-
-	PointF[] GetViewPoints(EventMotion e)
-	{
-		return new[] { new PointF((float)e.X, (float)e.Y) };
-	}
-
-	PointF[] GetViewPoints(EventCrossing e)
-	{
-		return new[] { new PointF((float)e.X, (float)e.Y) };
-	}
-
-
-	protected override bool OnButtonPressEvent(EventButton e)
-	{
-		_isTouching = true;
-		_graphicsView?.StartInteraction(GetViewPoints(e));
-		return base.OnButtonPressEvent(e);
-	}
-
-	protected override bool OnButtonReleaseEvent(EventButton e)
-	{
-		_isTouching = false;
-		_graphicsView?.EndInteraction(GetViewPoints(e), _isInBounds);
-
-		return base.OnButtonReleaseEvent(e);
-	}
-
-	protected override bool OnTouchEvent(Event evnt)
-	{
-		_isTouching = true;
-		return base.OnTouchEvent(evnt);
-	}
-
-	protected override bool OnEnterNotifyEvent(EventCrossing e)
-	{
-		_isInBounds = true;
-		_graphicsView?.StartHoverInteraction(GetViewPoints(e));
-		return base.OnEnterNotifyEvent(e);
-	}
-
-	protected override bool OnMotionNotifyEvent(EventMotion e)
-	{
-		_graphicsView?.MoveHoverInteraction(GetViewPoints(e));
-		return base.OnMotionNotifyEvent(e);
-	}
-
-	protected override bool OnLeaveNotifyEvent(EventCrossing e)
-	{
-		_isInBounds = false;
-
-		_graphicsView?.EndHoverInteraction();
-
-		if (_isTouching)
+		var click = new Gtk.GestureClick();
+		click.Pressed += (_, e) =>
+		{
+			_isTouching = true;
+			_graphicsView?.StartInteraction(ToPoints(e.X, e.Y));
+		};
+		click.Released += (_, e) =>
 		{
 			_isTouching = false;
-			_graphicsView?.EndInteraction(GetViewPoints(e), _isInBounds);
-		}
+			_graphicsView?.EndInteraction(ToPoints(e.X, e.Y), _isInBounds);
+		};
+		AddController(click);
 
-		return base.OnLeaveNotifyEvent(e);
+		var motion = new Gtk.EventControllerMotion();
+		motion.Enter += (_, e) =>
+		{
+			_isInBounds = true;
+			_graphicsView?.StartHoverInteraction(ToPoints(e.X, e.Y));
+		};
+		motion.Motion += (_, e) =>
+		{
+			_graphicsView?.MoveHoverInteraction(ToPoints(e.X, e.Y));
+		};
+		motion.Leave += (_, _) =>
+		{
+			_isInBounds = false;
+			_graphicsView?.EndHoverInteraction();
+
+			if (_isTouching)
+			{
+				_isTouching = false;
+				_graphicsView?.EndInteraction(System.Array.Empty<PointF>(), _isInBounds);
+			}
+		};
+		AddController(motion);
 	}
+
+	static PointF[] ToPoints(double x, double y) => new[] { new PointF((float)x, (float)y) };
 
 	public void Connect(IGraphicsView graphicsView)
 	{
 		_graphicsView = graphicsView;
-		Events |= EventMask.ButtonPressMask | EventMask.ButtonReleaseMask | EventMask.PointerMotionMask |
-				  EventMask.ButtonMotionMask | EventMask.LeaveNotifyMask | EventMask.EnterNotifyMask
-			;
 	}
 
 	public void Disconnect()

@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Platform
 
 			platformView.TooltipText = semantics.Hint;
 
-			if (platformView.Accessible is { } accessible and not Atk.NoOpObject && semantics.Description != null)
+			if (platformView.Accessible is { } accessible && semantics.Description != null)
 			{
 				accessible.Description = semantics.Description;
 			}
@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Platform
 				return (T)container.Children[index];
 			}
 
-			if (platformView is Gtk.Bin bin && index == 0 && bin.Child is T child)
+			if (platformView is Gtk.Container bin && index == 0 && bin.Children.Length > 0 && bin.Children[0] is T child)
 				return child;
 
 			return default;

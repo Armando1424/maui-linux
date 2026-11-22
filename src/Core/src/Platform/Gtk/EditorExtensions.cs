@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 					NoShowAll = true,
 				};
 
-				platformView.Add(label);
+				// GTK4: Gtk.TextView no es un contenedor; el placeholder va por CSS/atributos.
 				platformView.Data[PlaceholderKey] = label;
 
 				// The placeholder is only a visual hint; let the clicks go to

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiWindow : Window
 	{
 
-		public MauiWindow() : base(WindowType.Toplevel)
+		public MauiWindow() : base()
 		{ }
 
 	}

@@ -36,8 +36,8 @@ public class ShellView : Gtk.Box
 
 		_menuButton = new Gtk.Button
 		{
-			Image = new Gtk.Image { IconName = "open-menu-symbolic", PixelSize = 16 },
-			Relief = ReliefStyle.None,
+			Child = new Gtk.Image { IconName = "open-menu-symbolic", PixelSize = 16 },
+			HasFrame = false,
 			NoShowAll = true,
 		};
 		_menuButton.Clicked += (_, _) =>

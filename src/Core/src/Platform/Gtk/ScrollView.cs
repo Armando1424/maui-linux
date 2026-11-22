@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 
 		protected void _OnAdjustSizeRequest(Orientation orientation, out int minimum_size, out int natural_size)
 		{
-			base.OnAdjustSizeRequest(orientation, out minimum_size, out natural_size);
+			Measure(orientation, -1, out minimum_size, out natural_size, out _, out _);
 
 			double allocation = orientation == Orientation.Vertical ? AllocatedWidth : AllocatedHeight;
 
@@ -71,7 +71,6 @@ namespace Microsoft.Maui.Platform
 				CrossPlatformArrange(new Rect(Point.Zero, measure));
 			}
 
-			base.OnSizeAllocated(allocation);
 		}
 	}
 

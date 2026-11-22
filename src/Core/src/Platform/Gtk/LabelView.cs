@@ -18,25 +18,11 @@ namespace Microsoft.Maui.Platform
 
 		public TextAlignment VerticalTextAlignment { get; set; }
 
-		protected override void OnAdjustSizeRequest(Orientation orientation, out int minimum_size, out int natural_size)
+		protected override void OnMeasure(Orientation orientation, int forSize,
+			out int minimum, out int natural, out int minimumBaseline, out int naturalBaseline)
 		{
 			SetLayout(Layout, this);
-
-			base.OnAdjustSizeRequest(orientation, out minimum_size, out natural_size);
-
-			return;
-
-			int Constrainted(int avail)
-			{
-				var wConstraint = orientation == Orientation.Horizontal ? avail : double.PositiveInfinity;
-				var hConstraint = orientation == Orientation.Vertical ? avail : double.PositiveInfinity;
-				var size = GetDesiredSize(wConstraint, hConstraint);
-
-				return (int)(orientation == Orientation.Horizontal ? size.Width : size.Height);
-			}
-
-			natural_size = Constrainted(natural_size);
-			minimum_size = Constrainted(minimum_size);
+			base.OnMeasure(orientation, forSize, out minimum, out natural, out minimumBaseline, out naturalBaseline);
 		}
 
 		internal Size GetDesiredSize(double wConstraint, double hConstraint)
@@ -44,11 +30,10 @@ namespace Microsoft.Maui.Platform
 				RequestMode == SizeRequestMode.HeightForWidth, Text, Lines,
 				MarginStart, MarginTop, MarginEnd, MarginBottom);
 
-		protected override bool OnDrawn(Context cr)
+		protected override void OnSnapshot(Gtk.Snapshot snapshot)
 		{
 			SetLayout(Layout, this);
-
-			return base.OnDrawn(cr);
+			base.OnSnapshot(snapshot);
 		}
 
 		public static void SetLayout(Pango.Layout layout, LabelView platformView)

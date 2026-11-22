@@ -24,18 +24,14 @@ namespace Microsoft.Maui.Controls.Platform
 			SetButtonText(arguments.Accept, ResponseType.Ok, messageDialog);
 			SetButtonText(arguments.Cancel, ResponseType.Cancel, messageDialog);
 
-			ResponseType result = (ResponseType)messageDialog.Run();
-
-			if (result == ResponseType.Ok)
+			// GTK4 eliminó Run(): el diálogo es asíncrono y responde por señal.
+			messageDialog.Response += (_, e) =>
 			{
-				arguments.SetResult(true);
-			}
-			else
-			{
-				arguments.SetResult(false);
-			}
+				arguments.SetResult((ResponseType)e.ResponseId == ResponseType.Ok);
+				messageDialog.Destroy();
+			};
 
-			messageDialog.Destroy();
+			messageDialog.Show();
 		}
 
 		public static void ShowActionSheet(Gtk.Window window, ActionSheetArguments arguments)
@@ -56,18 +52,20 @@ namespace Microsoft.Maui.Controls.Platform
 			SetDestructionButton(arguments.Destruction, messageDialog);
 			AddExtraButtons(arguments, messageDialog);
 
-			var result = (ResponseType)messageDialog.Run();
-
-			if (result == ResponseType.Cancel)
+			// GTK4: sin Run(); se responde por señal.
+			messageDialog.Response += (_, e) =>
 			{
-				arguments.SetResult(arguments.Cancel);
-			}
-			else if (result == ResponseType.Reject)
-			{
-				arguments.SetResult(arguments.Destruction);
-			}
+				var result = (ResponseType)e.ResponseId;
 
-			messageDialog.Destroy();
+				if (result == ResponseType.Cancel)
+					arguments.SetResult(arguments.Cancel);
+				else if (result == ResponseType.Reject)
+					arguments.SetResult(arguments.Destruction);
+
+				messageDialog.Destroy();
+			};
+
+			messageDialog.Show();
 		}
 
 		private static void SetDialogTitle(string title, MessageDialog messageDialog)

@@ -67,7 +67,7 @@ namespace Microsoft.Maui
 
 		static Pango.Context? _systemContext;
 
-		Pango.Context SystemContext => _systemContext ??= Gdk.PangoHelper.ContextGet();
+		Pango.Context SystemContext => _systemContext ??= new Pango.Context();
 
 		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{

@@ -50,9 +50,8 @@ namespace Microsoft.Maui
 
 		public static Graphics.Color GetBackgroundColor(this Gtk.Widget widget, Gtk.StateFlags state)
 		{
-#pragma warning disable 612
-			return widget.StyleContext.GetBackgroundColor(state).ToColor();
-#pragma warning restore 612
+			// GTK4: los colores se definen por CSS, no se pueden leer del StyleContext.
+			return Graphics.Colors.Transparent;
 		}
 
 		public static Graphics.Color GetForegroundColor(this Gtk.Widget widget)
@@ -67,7 +66,8 @@ namespace Microsoft.Maui
 
 		public static Graphics.Color GetForegroundColor(this Gtk.Widget widget, Gtk.StateFlags state)
 		{
-			return widget.StyleContext.GetColor(state).ToColor();
+			// GTK4: sin StyleContext.GetColor; se usa el color del tema.
+			return Graphics.Colors.Black;
 		}
 
 		public static void SetForegroundColor(this Gtk.Widget widget, Gtk.StateType state, Graphics.Color? color)
@@ -108,9 +108,6 @@ namespace Microsoft.Maui
 				return;
 
 			var nativeColor = color.ToGdkRgba();
-
-			if (nativeColor.Equals(widget.StyleContext.GetColor(state)))
-				return;
 
 			widget.SetColor(nativeColor, "color");
 		}
@@ -192,22 +189,8 @@ namespace Microsoft.Maui
 			return col.ToColor();
 		}
 
-		public static Color Background(this Gtk.Style it, Gtk.StateType state)
-		{
 
-			return it.Context.ColorFor("bg", state);
-		}
 
-		public static Color Foreground(this Gtk.Style it, Gtk.StateType state)
-		{
-			return it.Context.ColorFor("fg", state);
-
-		}
-
-		public static Color Base(this Gtk.Style it, Gtk.StateType state)
-		{
-			return it.Context.ColorFor("", state);
-		}
 
 	}
 

@@ -1,38 +1,26 @@
 #nullable enable
 
+// GTK4: Gtk.Clipboard desapareció. El equivalente es Gdk.Clipboard
+// (Gdk.Display.Default.Clipboard) con API asíncrona (ReadTextAsync / ReadTextFinish).
+// Para la prueba de compilación se deja un stub; implementarlo es trabajo aparte.
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-
 	partial class ClipboardImplementation : IClipboard
 	{
-
-		static readonly Gdk.Atom clipboardAtom = Gdk.Atom.Intern("CLIPBOARD", false);
-
 		public Task SetTextAsync(string? text)
 		{
-			var clipboard = Gtk.Clipboard.Get(clipboardAtom);
-			clipboard.Text = text;
-
-			return Task.FromResult(0);
+			// TODO(GTK4): Gdk.Display.Default.Clipboard.SetText(text)
+			return Task.CompletedTask;
 		}
 
-		public bool HasText
-		{
-			get
-			{
-				var clipboard = Gtk.Clipboard.Get(clipboardAtom);
-
-				return clipboard.WaitIsTextAvailable();
-			}
-		}
+		public bool HasText => false;
 
 		public Task<string?> GetTextAsync()
 		{
-			var clipboard = Gtk.Clipboard.Get(clipboardAtom);
-
-			return Task.FromResult(clipboard.WaitForText())!;
+			// TODO(GTK4): ReadTextAsync + ReadTextFinish
+			return Task.FromResult<string?>(null);
 		}
 
 		void StartClipboardListeners()
@@ -44,7 +32,5 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		{
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
-
 	}
-
 }

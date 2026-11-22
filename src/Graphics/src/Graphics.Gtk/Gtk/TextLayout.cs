@@ -30,7 +30,7 @@ public class TextLayout : IDisposable
 		{
 			if (string.IsNullOrEmpty(_fontFamily))
 			{
-				_fontFamily = Gdk.PangoHelper.ContextGet().FontDescription.Family;
+				_fontFamily = (new Pango.Context().FontDescription?.Family ?? "Sans");
 			}
 
 			return _fontFamily;
@@ -76,7 +76,7 @@ public class TextLayout : IDisposable
 		{
 			if (_pangoFontSize == -1)
 			{
-				_pangoFontSize = Gdk.PangoHelper.ContextGet().FontDescription.Size;
+				_pangoFontSize = (new Pango.Context().FontDescription?.Size ?? 0);
 			}
 
 			return _pangoFontSize;

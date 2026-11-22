@@ -9,121 +9,68 @@ namespace Microsoft.Maui.Platform
 		public DateTime Date { get; } = date;
 	}
 
+	/// <summary>
+	/// GTK4 eliminó los grabs de Gdk.Seat: el foco lo gestiona la propia ventana
+	/// o el popover, así que aquí solo queda el foco.
+	/// </summary>
 	public class GrabHelper
 	{
-		public static void GrabWindow(Window window)
-		{
-			window.GrabFocus();
-
-			Grab.Add(window);
-			var grabbed =
-				Gdk.Display.Default.DefaultSeat.Grab(window.Window, Gdk.SeatCapabilities.All, true, null, null, null);
-			if (grabbed != Gdk.GrabStatus.Success)
-			{
-				Grab.Remove(window);
-				window.Destroy();
-			}
-		}
+		public static void GrabWindow(Window window) => window.GrabFocus();
 
 		public static void RemoveGrab(Window window)
 		{
-			Grab.Remove(window);
-			Gdk.Display.Default.DefaultSeat.Ungrab();
 		}
 	}
 
 	public partial class DatePickerWindow : Window
 	{
-		RangeCalendar _calendar;
+		readonly RangeCalendar _calendar;
 
 		public delegate void DateEventHandler(object sender, DateEventArgs args);
 
 		public event DateEventHandler? OnDateTimeChanged;
 
 		public DatePickerWindow(DateTime initialDate, Window? parentWindow)
-			: base(WindowType.Popup)
+			: base()
 		{
 			if (parentWindow is not null)
 				TransientFor = parentWindow;
+
 			Title = "DatePicker";
-			TypeHint = Gdk.WindowTypeHint.Desktop;
-			WindowPosition = WindowPosition.None;
-			BorderWidth = 1;
 			Resizable = false;
 			Decorated = false;
-			DestroyWithParent = true;
-			SkipPagerHint = true;
-			SkipTaskbarHint = true;
+
 			var datebox = new Box(Orientation.Vertical, 6);
-			datebox.BorderWidth = 3;
+			datebox.MarginTop = datebox.MarginBottom = 6;
+			datebox.MarginStart = datebox.MarginEnd = 6;
 
 			_calendar = new RangeCalendar();
 			_calendar.CanFocus = true;
-			_calendar.DisplayOptions = CalendarDisplayOptions.ShowHeading;
-			datebox.Add(_calendar);
-			var dateBoxChild = ((Box.BoxChild)(datebox[_calendar]));
-			dateBoxChild.Position = 0;
+			_calendar.DaySelected += OnCalendarDaySelected;
 
-			Add(datebox);
-
-			Child?.ShowAll();
+			datebox.Append(_calendar);
+			Child = datebox;
 
 			SelectedDate = initialDate;
 			Show();
-			ButtonPressEvent += new ButtonPressEventHandler(OnButtonPressEvent);
-			_calendar.ButtonPressEvent += new ButtonPressEventHandler(OnCalendarButtonPressEvent);
-			_calendar.DaySelected += new EventHandler(OnCalendarDaySelected);
-			_calendar.DaySelectedDoubleClick += new EventHandler(OnCalendarDaySelectedDoubleClick);
-			GrabHelper.GrabWindow(this);
 		}
 
 		public DateTime SelectedDate
 		{
-			get
-			{
-				return _calendar.Date;
-			}
-
-			set
-			{
-				_calendar.Date = value;
-			}
+			get => _calendar.Date;
+			set => _calendar.Date = value;
 		}
 
 		public DateTime MinimumDate
 		{
-			get
-			{
-				return _calendar.MinimumDate;
-			}
-
-			set
-			{
-				_calendar.MinimumDate = value;
-			}
+			get => _calendar.MinimumDate;
+			set => _calendar.MinimumDate = value;
 		}
 
 		public DateTime MaximumDate
 		{
-			get
-			{
-				return _calendar.MaximumDate;
-			}
-
-			set
-			{
-				_calendar.MaximumDate = value;
-			}
-		}
-
-		protected virtual void OnButtonPressEvent(object sender, ButtonPressEventArgs args)
-		{
-			CloseCalendar();
-		}
-
-		protected virtual void OnCalendarButtonPressEvent(object sender, ButtonPressEventArgs args)
-		{
-			args.RetVal = true;
+			get => _calendar.MaximumDate;
+			set => _calendar.MaximumDate = value;
 		}
 
 		protected virtual void OnCalendarDaySelected(object? sender, EventArgs eventArgs)
@@ -131,16 +78,8 @@ namespace Microsoft.Maui.Platform
 			OnDateTimeChanged?.Invoke(this, new DateEventArgs(SelectedDate));
 		}
 
-		protected virtual void OnCalendarDaySelectedDoubleClick(object? sender, EventArgs eventArgs)
-		{
-			OnDateTimeChanged?.Invoke(this, new DateEventArgs(SelectedDate));
-			CloseCalendar();
-		}
-
 		public void ShowCalendar()
 		{
-			Child?.ShowAll();
-
 			Show();
 			GrabHelper.GrabWindow(this);
 		}
@@ -151,11 +90,10 @@ namespace Microsoft.Maui.Platform
 			Hide();
 		}
 
-		void NotifyDateChanged()
-		{
-			OnDateTimeChanged?.Invoke(this, new DateEventArgs(SelectedDate));
-		}
-
+		/// <summary>
+		/// Gtk.Calendar de GTK4: su Date es un GLib.DateTime y solo existe la
+		/// señal day-selected (el doble clic desapareció).
+		/// </summary>
 		class RangeCalendar : Calendar
 		{
 			DateTime _minimumDate = new(1900, 1, 1);
@@ -163,17 +101,11 @@ namespace Microsoft.Maui.Platform
 
 			public DateTime MinimumDate
 			{
-				get
-				{
-					return _minimumDate;
-				}
-
+				get => _minimumDate;
 				set
 				{
 					if (MaximumDate < value)
-					{
 						throw new InvalidOperationException($"{nameof(MinimumDate)} must be lower than {nameof(MaximumDate)}");
-					}
 
 					_minimumDate = value;
 				}
@@ -181,32 +113,34 @@ namespace Microsoft.Maui.Platform
 
 			public DateTime MaximumDate
 			{
-				get
-				{
-					return _maximumDate;
-				}
-
+				get => _maximumDate;
 				set
 				{
 					if (MinimumDate > value)
-					{
 						throw new InvalidOperationException($"{nameof(MaximumDate)} must be greater than {nameof(MinimumDate)}");
-					}
 
 					_maximumDate = value;
 				}
 			}
 
+			public new DateTime Date
+			{
+				get
+				{
+					var date = base.Date;
+					return new DateTime(date.Year, date.Month, date.DayOfMonth);
+				}
+				set => base.Date = new GLib.DateTime(value.Year, value.Month, value.Day, 0, 0, 0);
+			}
+
 			protected override void OnDaySelected()
 			{
 				if (Date < MinimumDate)
-				{
 					Date = MinimumDate;
-				}
 				else if (Date > MaximumDate)
-				{
 					Date = MaximumDate;
-				}
+
+				base.OnDaySelected();
 			}
 		}
 	}
@@ -217,18 +151,23 @@ namespace Microsoft.Maui.Platform
 
 		public CustomComboBox() : base(Orientation.Horizontal, 0)
 		{
-			Entry = new Entry();
-			Entry.CanFocus = true;
-			Entry.IsEditable = true;
-			Entry.SetIconFromIconName(EntryIconPosition.Secondary, "pan-down-symbolic");
-			PackStart(Entry, true, true, 0);
+			Entry = new Entry { IsEditable = true };
+
+			// GTK4 quitó los iconos de Entry: el botón va como hermano.
+			ToggleButton = new Button { IconName = "pan-down-symbolic" };
+			ToggleButton.AddCssClass("flat");
+
+			Append(Entry);
+			Append(ToggleButton);
 		}
 
 		public Entry Entry { get; }
 
+		public Button ToggleButton { get; }
+
 		public Color Color
 		{
-			get { return _color; }
+			get => _color;
 			set
 			{
 				_color = value;
@@ -244,16 +183,14 @@ namespace Microsoft.Maui.Platform
 		string? _dateFormat;
 		DatePickerWindow? _pickerWindow;
 
-		public event EventHandler DateChanged = new EventHandler((sender, args) => { });
-		public event EventHandler GotFocus = new EventHandler((sender, args) => { });
-		public event EventHandler LostFocus = new EventHandler((sender, args) => { });
+		public event EventHandler DateChanged = new((sender, args) => { });
+		public event EventHandler GotFocus = new((sender, args) => { });
+		public event EventHandler LostFocus = new((sender, args) => { });
 
 		public MauiDatePicker()
 		{
 			_comboBox = new CustomComboBox();
-			Add(_comboBox);
-
-			Child?.ShowAll();
+			Child = _comboBox;
 			Show();
 
 			Date = DateTime.Now;
@@ -261,22 +198,14 @@ namespace Microsoft.Maui.Platform
 			MinDate = new DateTime(1900, 1, 1);
 			MaxDate = new DateTime(2199, 1, 1);
 
-			_comboBox.Entry.CanDefault = false;
-			_comboBox.Entry.CanFocus = false;
-			_comboBox.Entry.IsEditable = false;
-			_comboBox.Entry.SetStateFlags(StateFlags.Normal, true);
-			_comboBox.Entry.CanFocus = false;
-			_comboBox.Entry.IsEditable = false;
-			_comboBox.Entry.FocusGrabbed += new EventHandler(OnEntryFocused);
-			_comboBox.Entry.IconPress += new IconPressHandler(OnBtnShowCalendarClicked);
+			// El calendario se abre al pulsar el botón; GTK4 ya no tiene
+			// icon-press ni focus-grabbed en Entry.
+			_comboBox.ToggleButton.Clicked += OnBtnShowCalendarClicked;
 		}
 
 		public DateTime Date
 		{
-			get
-			{
-				return _currentDate;
-			}
+			get => _currentDate;
 			set
 			{
 				_currentDate = value;
@@ -292,10 +221,7 @@ namespace Microsoft.Maui.Platform
 
 		public string? Format
 		{
-			get
-			{
-				return _dateFormat;
-			}
+			get => _dateFormat;
 			set
 			{
 				_dateFormat = value;
@@ -305,27 +231,23 @@ namespace Microsoft.Maui.Platform
 
 		void ShowPickerWindow()
 		{
-			Window.GetOrigin(out var x, out var y);
-			y += Allocation.Height;
-
 			if (_pickerWindow is not { })
 			{
 				var picker = new DatePickerWindow(Date, Toplevel as Window);
-				picker.Move(x, y);
 				picker.MinimumDate = MinDate;
 				picker.MaximumDate = MaxDate;
 				picker.OnDateTimeChanged += OnPopupDateChanged;
-				picker.Destroyed += OnPickerClosed;
+				picker.CloseRequest += OnPickerClosed;
 				_pickerWindow = picker;
 			}
 			else
 			{
 				if (_pickerWindow.SelectedDate != Date)
 					_pickerWindow.SelectedDate = Date;
+
 				_pickerWindow.MinimumDate = MinDate;
 				_pickerWindow.MaximumDate = MaxDate;
 				_pickerWindow.ShowCalendar();
-				_pickerWindow.Move(x, y);
 			}
 		}
 
@@ -357,20 +279,13 @@ namespace Microsoft.Maui.Platform
 		void OnBtnShowCalendarClicked(object? sender, EventArgs eventArgs)
 		{
 			ShowPickerWindow();
-		}
-
-		void OnEntryFocused(object? sender, EventArgs eventArgs)
-		{
-			ShowPickerWindow();
 			GotFocus?.Invoke(this, EventArgs.Empty);
 		}
 
-		void OnPickerClosed(object? sender, EventArgs eventArgs)
+		void OnPickerClosed(object? sender, Gtk.CloseRequestArgs eventArgs)
 		{
 			if (sender is not DatePickerWindow window)
-			{
 				return;
-			}
 
 			window.Hide();
 			LostFocus?.Invoke(this, EventArgs.Empty);

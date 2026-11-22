@@ -9,9 +9,8 @@ namespace Microsoft.Maui
 	{
 
 		public static Pango.FontDescription GetPangoFontDescription(this Widget it)
-#pragma warning disable 612
-			=> it.StyleContext.GetFont(it.StateFlags);
-#pragma warning restore 612
+			// GTK4: la fuente del widget no es consultable; se parte de la del contexto Pango.
+			=> new Pango.Context().FontDescription ?? Pango.FontDescription.FromString("Sans 10");
 
 		/// <summary>
 		/// size in points
@@ -71,7 +70,7 @@ namespace Microsoft.Maui
 			var metrics = it.PangoContext.GetMetrics(font, Pango.Language.Default);
 			var pangoUnits = (metrics.Ascent + metrics.Descent) / Pango.Scale.PangoScale;
 
-			var resolution = it.Screen.Resolution;
+			var resolution = 96.0;
 			var height = (pangoUnits * (resolution / 72.0));
 
 			return height;

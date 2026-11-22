@@ -7,10 +7,10 @@ namespace Microsoft.Maui.Handlers
 	// https://docs.gtk.org/gtk3/class.MenuShell.html
 
 	public abstract class GtkMenuShellHandler<TVirtualView, TPlatform, TVirtualItem, TPlatformItem> : ElementHandler<TVirtualView, TPlatform>
-		where TPlatform : Gtk.MenuShell, new()
+		where TPlatform : class, Microsoft.Maui.Platform.IMauiMenuContainer, new()
 		where TVirtualView : class, IList<TVirtualItem>, IElement
 		where TVirtualItem : IElement
-		where TPlatformItem : Gtk.MenuItem
+		where TPlatformItem : Microsoft.Maui.Platform.MauiMenuItem
 	{
 		protected GtkMenuShellHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper) { }
 
@@ -32,20 +32,20 @@ namespace Microsoft.Maui.Handlers
 
 		public void Add(TVirtualItem view)
 		{
-			var platformItem = (TPlatformItem)view.ToPlatform(MauiContext!);
+			var platformItem = (TPlatformItem)view.Handler!.PlatformView!;
 			PlatformView.Append(platformItem);
 			platformItem.Show();
 		}
 
 		public void Remove(TVirtualItem view)
 		{
-			var platformItem = (TPlatformItem)view.ToPlatform(MauiContext!);
+			var platformItem = (TPlatformItem)view.Handler!.PlatformView!;
 			PlatformView.Remove(platformItem);
 		}
 
 		public void Insert(int index, TVirtualItem view)
 		{
-			var platformItem = (TPlatformItem)view.ToPlatform(MauiContext!);
+			var platformItem = (TPlatformItem)view.Handler!.PlatformView!;
 			PlatformView.Insert(platformItem, index);
 			platformItem.Show();
 		}
@@ -59,5 +59,5 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public partial class MenuBarHandler : GtkMenuShellHandler<IMenuBar, MauiMenuBar, IMenuBarItem, Gtk.MenuItem> { }
+	public partial class MenuBarHandler : GtkMenuShellHandler<IMenuBar, MauiMenuBar, IMenuBarItem, MauiMenuItem> { }
 }
