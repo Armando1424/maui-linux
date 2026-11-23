@@ -1,6 +1,6 @@
 # GTK 3 versus GTK 4
 
-Last update: 2026-11-11
+Last update: 2026-11-23
 
 ## Short answer
 
@@ -13,7 +13,7 @@ so it is a new backend, not a version bump.
 
 | Topic | GTK 3 (current) | GTK 4 |
 |:--|:--|:--|
-| Binding | GtkSharp `3.24.24.x` | `GirCore.Gtk-4.0` (different API and project) |
+| Binding | GtkSharp `3.24.24.x` | GtkSharp 4.x (GTK4 port; GirCore was an early alternative) |
 | Widget model | `Gtk.Container`, `Gtk.Bin`, `Gtk.Box` packing | no `Container`; layout managers and `Gtk.Box.Append` |
 | Drawing | `Gtk.DrawingArea` + Cairo `OnDrawn` | snapshots (`GtkSnapshot`) and `Gtk.DrawingArea.SetDrawFunc` |
 | CSS | `CssProvider` per widget (`StyleContext.AddProvider`) | global `Gtk.StyleContext.AddProviderForDisplay` |
@@ -29,16 +29,16 @@ a phase of its own, not a change inside the GTK 3 backend.
 
 ## What would be needed
 
-1. A GTK 4 binding: `GirCore.Gtk-4.0` (0.8.x at the time of writing).
+1. A GTK 4 binding. The port uses `GtkSharp-Gtk4` (GtkSharp 4.x); GirCore was
+   evaluated early on as an alternative.
 2. A parallel `Platform/Gtk4` folder and `*Handler.Gtk4.cs` files (the shared
    handler logic can stay).
 3. A `Gtk4` workload/manifest and a `net10.0-gtk4` TFM.
 4. CI jobs for both backends, and documentation of which controls are
    supported on each.
 
-A local clone of GirCore lives in `~/proyectos/gir.core` (commit `b286a4b`)
-with its own `CONTEXT.local.md`; it is the reference for the future GTK 4
-backend and is not part of the net10 migration.
+The local GirCore clone was removed on 2026-11-23; the active GTK 4 binding is
+`GtkSharp-Gtk4` (see the update below).
 
 Until then, the GTK 3 backend is the supported Linux backend for this fork.
 
