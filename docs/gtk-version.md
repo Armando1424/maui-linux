@@ -41,3 +41,9 @@ with its own `CONTEXT.local.md`; it is the reference for the future GTK 4
 backend and is not part of the net10 migration.
 
 Until then, the GTK 3 backend is the supported Linux backend for this fork.
+
+## Update (2026-11-22): the GTK 4 port was tested
+
+A probe branch (`feature/gtk4-probe`) was ported to **GtkSharp's GTK 4
+bindings** — not GirCore — and it compiles, runs and renders. Details, mapping
+tables and limitations: [`gtk4-port.md`](gtk4-port.md).
